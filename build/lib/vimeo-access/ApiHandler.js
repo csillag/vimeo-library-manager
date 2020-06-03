@@ -2,7 +2,14 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ApiHandler = void 0;
 var vimeo_1 = require("vimeo");
-var SCOPES = "public create interact private edit delete";
+var wantedScopes = [
+    "public",
+    "create",
+    "interact",
+    "private",
+    "edit",
+    "delete",
+];
 function parseError(err) {
     try {
         var data = JSON.parse(err.message);
@@ -35,7 +42,7 @@ var ApiHandler = /** @class */ (function () {
         if (!this._auth.redirectUrl) {
             throw new Error("Redirect URL is not configured!");
         }
-        return this._client.buildAuthorizationEndpoint(this._auth.redirectUrl, SCOPES, "login");
+        return this._client.buildAuthorizationEndpoint(this._auth.redirectUrl, wantedScopes.join(" "), "login");
     };
     ApiHandler.prototype.finishLogin = function (code) {
         var _this = this;

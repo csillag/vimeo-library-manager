@@ -1,10 +1,10 @@
 + When logging in, save user ID
 + Display user name
 
-- When updating video data:
+= When updating video data:
   - Check if exists
   - Check if mine
-  - Check if we have edit scope
+  + Check if we have edit scope
   - Check if the data has changed
   - Introduce sub-commands
 - Check if we have edit permissions

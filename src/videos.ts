@@ -1,4 +1,4 @@
-import { getNormalClient } from "./auth";
+import { getNormalClient, hasScope } from "./auth";
 import { loadConfig } from "./config";
 import { VideoUpdateData } from "./lib/vimeo-access";
 
@@ -47,6 +47,12 @@ export function updateVideoData(videoId: string, dataString: string) {
   const vimeo = getNormalClient();
   if (!vimeo) {
     return;
+  }
+
+  if (!hasScope("edit")) {
+    console.error(
+      "This session doesn't have EDIT scope. Please log out and log in again, with the correct permissions."
+    );
   }
 
   try {

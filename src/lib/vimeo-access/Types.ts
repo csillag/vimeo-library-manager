@@ -20,6 +20,14 @@ export interface AuthInfo {
   accessToken?: string;
 }
 
+export type AccessScope =
+  | "public"
+  | "create"
+  | "interact"
+  | "private"
+  | "edit"
+  | "delete";
+
 export interface ClientParams {
   /**
    * Should we run in debug mode?
@@ -31,7 +39,7 @@ export interface LoginInfo {
   accessToken: string;
   userUri: string;
   userName: string;
-  scopes: string[];
+  scopes: AccessScope[];
 }
 
 type License =

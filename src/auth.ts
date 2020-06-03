@@ -3,7 +3,7 @@
  */
 import { APP_NAME, log } from "./common";
 import { loadConfig, saveConfig } from "./config";
-import { SyncApi, SyncApiHandler } from "./lib/vimeo-access-sync";
+import { AccessScope, SyncApi, SyncApiHandler } from "./lib/vimeo-access-sync";
 
 export function testAccess() {
   console.log();
@@ -24,6 +24,8 @@ export function testAccess() {
       config.userUri,
       ")"
     );
+    console.log("The allowed scopes are:", config.scopes);
+    console.log();
 
     const vimeo = getNormalClient();
     if (!vimeo) {
@@ -177,6 +179,18 @@ export function finishLogin(code: string) {
     console.error("Failed to log in:", error);
     console.error();
   }
+}
+
+export function hasScope(scope: AccessScope): boolean {
+  const config = loadConfig();
+  if (!config) {
+    return false;
+  }
+  const { scopes } = config;
+  if (!scopes) {
+    return false;
+  }
+  return scopes.indexOf(scope) !== -1;
 }
 
 export function logout() {

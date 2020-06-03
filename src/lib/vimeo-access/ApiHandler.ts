@@ -1,9 +1,22 @@
 import { Api } from "./Api";
-import { AuthInfo, ClientParams, LoginInfo, VideoUpdateData } from "./Types";
+import {
+  AccessScope,
+  AuthInfo,
+  ClientParams,
+  LoginInfo,
+  VideoUpdateData,
+} from "./Types";
 import { Vimeo } from "vimeo";
 import { VideoData } from "./MoreTypes";
 
-const SCOPES = "public create interact private edit delete";
+const wantedScopes: AccessScope[] = [
+  "public",
+  "create",
+  "interact",
+  "private",
+  "edit",
+  "delete",
+];
 
 function parseError(err: any): string {
   try {
@@ -36,7 +49,7 @@ export class ApiHandler implements Api {
     }
     return (this._client.buildAuthorizationEndpoint(
       this._auth.redirectUrl,
-      SCOPES,
+      wantedScopes.join(" "),
       "login"
     ) as unknown) as string;
   }

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.logout = exports.finishLogin = exports.startLogin = exports.getNormalClient = exports.initAccess = exports.testAccess = void 0;
+exports.logout = exports.hasScope = exports.finishLogin = exports.startLogin = exports.getNormalClient = exports.initAccess = exports.testAccess = void 0;
 /**
  * Test VIMEO API access
  */
@@ -20,6 +20,8 @@ function testAccess() {
     if (config.accessToken) {
         common_1.log("Apparently, there is an access token....");
         console.log("Allegedly, you are logged in as", config.userName, "(", config.userUri, ")");
+        console.log("The allowed scopes are:", config.scopes);
+        console.log();
         var vimeo = getNormalClient();
         if (!vimeo) {
             return;
@@ -151,6 +153,18 @@ function finishLogin(code) {
     }
 }
 exports.finishLogin = finishLogin;
+function hasScope(scope) {
+    var config = config_1.loadConfig();
+    if (!config) {
+        return false;
+    }
+    var scopes = config.scopes;
+    if (!scopes) {
+        return false;
+    }
+    return scopes.indexOf(scope) !== -1;
+}
+exports.hasScope = hasScope;
 function logout() {
     var config = config_1.loadConfig();
     // TODO: Actually invalidate the token, instead of just dropping it

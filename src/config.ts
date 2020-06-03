@@ -1,6 +1,7 @@
 import path from "path";
 import fs from "fs";
 import { program } from "./common";
+import { AccessScope } from "./lib/vimeo-access";
 
 interface Config {
   clientId: string;
@@ -9,7 +10,7 @@ interface Config {
   accessToken?: string;
   userName?: string;
   userUri?: string;
-  scopes?: string[];
+  scopes?: AccessScope[];
 }
 
 const getConfigFileName = () => program.opts().config;
