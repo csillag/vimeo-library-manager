@@ -6,7 +6,7 @@ var SCOPES = "public create interact private edit delete";
 function parseError(err) {
     var data = JSON.parse(err.message);
     var error = data.error, developer_message = data.developer_message;
-    return error + " " + developer_message;
+    return error + (!developer_message ? "" : " " + developer_message);
 }
 var ApiHandler = /** @class */ (function () {
     function ApiHandler(_auth, _params) {
@@ -86,6 +86,35 @@ var ApiHandler = /** @class */ (function () {
                     var total = body.total, page = body.page, per_page = body.per_page, data = body.data;
                     console.log("There are", total, "videos total.", "We are at page", page, ".", "There are", per_page, "videos on each page.");
                     resolve(data);
+                }
+            });
+        });
+    };
+    ApiHandler.prototype.editVideo = function (videoId, data) {
+        var _this = this;
+        return new Promise(function (resolve, reject) {
+            var path = "/videos/" + videoId;
+            _this._client.request({
+                method: "PATCH",
+                path: path,
+                query: data,
+                headers: { "Content-Type": "application/json" },
+            }, function (error, _body, statusCode, _headers) {
+                if (error) {
+                    reject(parseError(error));
+                }
+                else {
+                    console.log(_body);
+                    switch (statusCode) {
+                        case 200:
+                            resolve("The video was edited.");
+                            break;
+                        case 400:
+                            reject("A parameter is invalid.");
+                            break;
+                        case 402:
+                            reject("You are not allowed to do this!");
+                    }
                 }
             });
         });

@@ -28,7 +28,7 @@ I think we can agree that this is not what we want.
 Not a lot ATM, since I just started writing this tool.
 
 ```
-sage: vimeo-library-manager [options] [command]
+Usage: vimeo-library-manager [options] [command]
 
 Options:
   -V, --version                                           output the version number
@@ -44,7 +44,17 @@ Commands:
   finish-login <code>                                     Finish the login process
   logout                                                  Log out from vimeo
   list-videos                                             List my videos
+  edit-video <video-id> <data>                            Edit a video
   help [command]                                          display help for command
 ```
+
+### Editing a video
+
+You must provide a valid JSON string, with escaping and all that.
+About properties that can be edited, see [the API reference](https://developer.vimeo.com/api/reference/videos#edit_video).
+
+This example changes the title of a video:
+
+`vimeo-library-manager edit-video 425342398 "{ \"name\": \"New title\" }"`
 
 

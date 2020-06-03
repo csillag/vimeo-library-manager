@@ -1,4 +1,4 @@
-import { LoginInfo, Video } from "../vimeo-access";
+import { LoginInfo, VideoData, VideoUpdateData } from "../vimeo-access";
 
 export interface SyncApi {
   /**
@@ -23,5 +23,10 @@ export interface SyncApi {
   /**
    * List the user's videos
    */
-  listMyVideos(): Video[];
+  listMyVideos(): VideoData[];
+
+  /**
+   * This method edits the specified video.
+   */
+  editVideo(videoId: string, data: VideoUpdateData): string;
 }

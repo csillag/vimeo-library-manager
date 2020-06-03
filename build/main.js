@@ -32,6 +32,10 @@ function configureCLI() {
         .command("list-videos")
         .description("List my videos")
         .action(videos_1.listVideos);
+    common_1.program
+        .command("edit-video <video-id> <data>")
+        .description("Edit a video")
+        .action(videos_1.editVideo);
 }
 function main() {
     configureCLI();

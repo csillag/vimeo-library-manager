@@ -2,6 +2,7 @@ import { SyncApi } from "./SyncApi";
 import {
   wrapPromiseAsync0,
   wrapPromiseAsync1,
+  wrapPromiseAsync2,
   // wrapPromiseAsync2,
 } from "../fiber-async-function-wrappers";
 import {
@@ -10,7 +11,8 @@ import {
   AuthInfo,
   ClientParams,
   LoginInfo,
-  Video,
+  VideoData,
+  VideoUpdateData,
 } from "../vimeo-access";
 
 export class SyncApiHandler implements SyncApi {
@@ -19,7 +21,8 @@ export class SyncApiHandler implements SyncApi {
   readonly getLoginUrl: () => string;
   readonly finishLogin: (loginToken: string) => LoginInfo;
   readonly tutorial: () => string;
-  readonly listMyVideos: () => Video[];
+  readonly listMyVideos: () => VideoData[];
+  readonly editVideo: (videoId: string, date: VideoUpdateData) => string;
 
   constructor(auth: AuthInfo, params?: ClientParams) {
     this._vimeoAsync = new ApiHandler(auth, params);
@@ -35,6 +38,10 @@ export class SyncApiHandler implements SyncApi {
     );
     this.listMyVideos = wrapPromiseAsync0(
       this._vimeoAsync.listMyVideos,
+      this._vimeoAsync
+    );
+    this.editVideo = wrapPromiseAsync2(
+      this._vimeoAsync.editVideo,
       this._vimeoAsync
     );
   }

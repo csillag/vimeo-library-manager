@@ -1,4 +1,5 @@
-import { LoginInfo, Video } from "./Types";
+import { LoginInfo, VideoUpdateData } from "./Types";
+import { VideoData } from "./MoreTypes";
 
 export interface Api {
   /**
@@ -23,5 +24,10 @@ export interface Api {
   /**
    * List the user's videos
    */
-  listMyVideos(): Promise<Video[]>;
+  listMyVideos(): Promise<VideoData[]>;
+
+  /**
+   * This method edits the specified video.
+   */
+  editVideo(videoId: string, data: VideoUpdateData): Promise<string>;
 }

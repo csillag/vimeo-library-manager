@@ -1,13 +1,14 @@
 import { Api } from "./Api";
-import { AuthInfo, ClientParams, LoginInfo, Video } from "./Types";
+import { AuthInfo, ClientParams, LoginInfo, VideoUpdateData } from "./Types";
 import { Vimeo } from "vimeo";
+import { VideoData } from "./MoreTypes";
 
 const SCOPES = "public create interact private edit delete";
 
 function parseError(err: any): string {
   const data = JSON.parse(err.message);
   const { error, developer_message } = data;
-  return error + " " + developer_message;
+  return error + (!developer_message ? "" : " " + developer_message);
 }
 
 export class ApiHandler implements Api {
@@ -83,8 +84,8 @@ export class ApiHandler implements Api {
     });
   }
 
-  listMyVideos(): Promise<Video[]> {
-    return new Promise<Video[]>((resolve, reject) => {
+  listMyVideos(): Promise<VideoData[]> {
+    return new Promise<VideoData[]>((resolve, reject) => {
       this._client.request(
         {
           method: "GET",
@@ -107,6 +108,37 @@ export class ApiHandler implements Api {
               "videos on each page."
             );
             resolve(data);
+          }
+        }
+      );
+    });
+  }
+
+  editVideo(videoId: string, data: VideoUpdateData): Promise<string> {
+    return new Promise<string>((resolve, reject) => {
+      const path = "/videos/" + videoId;
+      this._client.request(
+        {
+          method: "PATCH",
+          path: path,
+          query: data as any, // We are passing on the JSON object _and this is fine_.
+          headers: { "Content-Type": "application/json" },
+        },
+        (error: any, _body, statusCode, _headers) => {
+          if (error) {
+            reject(parseError(error));
+          } else {
+            console.log(_body);
+            switch (statusCode) {
+              case 200:
+                resolve("The video was edited.");
+                break;
+              case 400:
+                reject("A parameter is invalid.");
+                break;
+              case 402:
+                reject("You are not allowed to do this!");
+            }
           }
         }
       );

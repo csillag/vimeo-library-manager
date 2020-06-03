@@ -1,5 +1,6 @@
 import { getNormalClient } from "./auth";
 import { loadConfig } from "./config";
+import { VideoUpdateData } from "./lib/vimeo-access";
 
 export function listVideos() {
   const vimeo = getNormalClient();
@@ -17,11 +18,42 @@ export function listVideos() {
     console.log("Found", results.length, "videos:");
     console.log();
     results.forEach((video) => {
-      const { link, name } = video;
-      console.log(link, "\t\t", name);
+      const { privacy, link, name } = video;
+      console.log(link, "\t\t", privacy.view, "\t", name);
     });
     console.log();
   } catch (error) {
     console.error(error);
+  }
+}
+
+export function editVideo(videoId: string, dataString: string) {
+  console.log();
+  let data: VideoUpdateData = {};
+  try {
+    data = JSON.parse(dataString);
+  } catch (error) {
+    console.error("The data you specified is not valid JSON!");
+    console.error();
+    return;
+  }
+  console.log(
+    "Editing video",
+    videoId,
+    "with data",
+    JSON.stringify(data, null, "  ")
+  );
+  console.log();
+  const vimeo = getNormalClient();
+  if (!vimeo) {
+    return;
+  }
+
+  try {
+    const result = vimeo.editVideo(videoId, data);
+    console.log("Result is:", result);
+  } catch (error) {
+    console.error("Error while editing video:", error);
+    console.error();
   }
 }
