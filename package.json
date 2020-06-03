@@ -1,14 +1,15 @@
 {
   "name": "vimeo-library-manager",
-  "version": "1.0.0",
-  "description": "",
+  "version": "0.0.1",
+  "description": "A manager for your Vimeo libraries",
+  "author": "Kristof Csillag <csillag.kristof@gmail.com>",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
-  "author": "",
   "license": "ISC",
+  "repository": "github:csillag/vimeo-library-manager",
   "devDependencies": {
     "@types/commander": "2.12.2",
     "@types/fibers": "3.1.0",
@@ -21,5 +22,8 @@
     "commander": "5.1.0",
     "fibers": "5.0.0",
     "vimeo": "2.1.1"
+  },
+  "bin": {
+    "vimeo-library-manager": "build/main.js"
   }
 }
