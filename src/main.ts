@@ -10,7 +10,7 @@ import {
   startLogin,
   testAccess,
 } from "./auth";
-import { editVideo, listVideos } from "./videos";
+import { updateVideoData, listVideos } from "./videos";
 
 function configureCLI() {
   program.version("0.0.3");
@@ -50,9 +50,9 @@ function configureCLI() {
     .action(listVideos);
 
   program
-    .command("edit-video <video-id> <data>")
-    .description("Edit a video")
-    .action(editVideo);
+    .command("update-data <video-id> <data>")
+    .description("Update video data")
+    .action(updateVideoData);
 }
 
 function main() {

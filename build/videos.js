@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.editVideo = exports.listVideos = void 0;
+exports.updateVideoData = exports.listVideos = void 0;
 var auth_1 = require("./auth");
 var config_1 = require("./config");
 function listVideos() {
@@ -28,7 +28,7 @@ function listVideos() {
     }
 }
 exports.listVideos = listVideos;
-function editVideo(videoId, dataString) {
+function updateVideoData(videoId, dataString) {
     console.log();
     var data = {};
     try {
@@ -54,4 +54,4 @@ function editVideo(videoId, dataString) {
         console.error();
     }
 }
-exports.editVideo = editVideo;
+exports.updateVideoData = updateVideoData;

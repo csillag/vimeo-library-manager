@@ -27,7 +27,7 @@ export function listVideos() {
   }
 }
 
-export function editVideo(videoId: string, dataString: string) {
+export function updateVideoData(videoId: string, dataString: string) {
   console.log();
   let data: VideoUpdateData = {};
   try {
