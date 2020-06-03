@@ -96,7 +96,7 @@ function getLoginClient(): Api | undefined {
   });
 }
 
-function getNormalClient(): Api | undefined {
+export function getNormalClient(): Api | undefined {
   const config = loadConfig();
   if (!config) {
     return;

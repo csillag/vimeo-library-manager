@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.finishLogin = exports.startLogin = exports.initAccess = exports.testAccess = void 0;
+exports.finishLogin = exports.startLogin = exports.getNormalClient = exports.initAccess = exports.testAccess = void 0;
 /**
  * Test VIMEO API access
  */
@@ -104,6 +104,7 @@ function getNormalClient() {
         accessToken: accessToken,
     });
 }
+exports.getNormalClient = getNormalClient;
 function startLogin() {
     common_1.log("Should test Vimeo access");
     var vimeo = getLoginClient();

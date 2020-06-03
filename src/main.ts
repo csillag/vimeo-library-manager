@@ -3,6 +3,7 @@
 import process = require("process");
 import { program } from "./common";
 import { finishLogin, initAccess, startLogin, testAccess } from "./auth";
+import { listVideos } from "./videos";
 
 function configureCLI() {
   program.version("0.0.1");
@@ -33,6 +34,11 @@ function configureCLI() {
     .command("finish-login <code>")
     .description("Finish the login process")
     .action(finishLogin);
+
+  program
+    .command("list-videos")
+    .description("List my videos")
+    .action(listVideos);
 }
 
 function main() {

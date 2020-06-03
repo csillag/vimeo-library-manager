@@ -67,7 +67,21 @@ var ApiHandler = /** @class */ (function () {
         });
     };
     ApiHandler.prototype.listMyVideos = function () {
-        return Promise.resolve([]);
+        var _this = this;
+        return new Promise(function (resolve, reject) {
+            _this._client.request({
+                method: "GET",
+                path: "/me/videos",
+            }, function (error, body, _statusCode, _headers) {
+                if (error) {
+                    reject(error.message);
+                    return;
+                }
+                var total = body.total, page = body.page, per_page = body.per_page, data = body.data;
+                console.log("There are", total, "videos total.", "We are at page", page, ".", "There are", per_page, "videos on each page.");
+                resolve(data);
+            });
+        });
     };
     return ApiHandler;
 }());

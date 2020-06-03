@@ -33,4 +33,8 @@ export interface LoginInfo {
   scopes: string[];
 }
 
-export interface Video {}
+export interface Video {
+  link: string;
+  name: string;
+  duration: number;
+}

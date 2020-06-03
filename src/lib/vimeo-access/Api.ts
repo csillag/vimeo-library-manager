@@ -19,5 +19,9 @@ export interface Api {
    * Make a test API call
    */
   tutorial(): any;
+
+  /**
+   * List the user's videos
+   */
   listMyVideos(): Promise<Video[]>;
 }

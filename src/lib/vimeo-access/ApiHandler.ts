@@ -78,6 +78,32 @@ export class ApiHandler implements Api {
   }
 
   listMyVideos(): Promise<Video[]> {
-    return Promise.resolve([]);
+    return new Promise<Video[]>((resolve, reject) => {
+      this._client.request(
+        {
+          method: "GET",
+          path: "/me/videos",
+        },
+        (error: any, body, _statusCode, _headers) => {
+          if (error) {
+            reject(error.message);
+            return;
+          }
+          const { total, page, per_page, data } = body;
+          console.log(
+            "There are",
+            total,
+            "videos total.",
+            "We are at page",
+            page,
+            ".",
+            "There are",
+            per_page,
+            "videos on each page."
+          );
+          resolve(data);
+        }
+      );
+    });
   }
 }
