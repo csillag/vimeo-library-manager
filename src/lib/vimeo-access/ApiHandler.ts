@@ -6,9 +6,13 @@ import { VideoData } from "./MoreTypes";
 const SCOPES = "public create interact private edit delete";
 
 function parseError(err: any): string {
-  const data = JSON.parse(err.message);
-  const { error, developer_message } = data;
-  return error + (!developer_message ? "" : " " + developer_message);
+  try {
+    const data = JSON.parse(err.message);
+    const { error, developer_message } = data;
+    return error + (!developer_message ? "" : " " + developer_message);
+  } catch (error) {
+    return err.message;
+  }
 }
 
 export class ApiHandler implements Api {

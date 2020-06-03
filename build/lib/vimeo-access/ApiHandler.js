@@ -4,9 +4,14 @@ exports.ApiHandler = void 0;
 var vimeo_1 = require("vimeo");
 var SCOPES = "public create interact private edit delete";
 function parseError(err) {
-    var data = JSON.parse(err.message);
-    var error = data.error, developer_message = data.developer_message;
-    return error + (!developer_message ? "" : " " + developer_message);
+    try {
+        var data = JSON.parse(err.message);
+        var error = data.error, developer_message = data.developer_message;
+        return error + (!developer_message ? "" : " " + developer_message);
+    }
+    catch (error) {
+        return err.message;
+    }
 }
 var ApiHandler = /** @class */ (function () {
     function ApiHandler(_auth, _params) {
