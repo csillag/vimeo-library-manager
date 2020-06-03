@@ -47,6 +47,8 @@ function updateVideoData(videoId, dataString) {
     }
     if (!auth_1.hasScope("edit")) {
         console.error("This session doesn't have EDIT scope. Please log out and log in again, with the correct permissions.");
+        console.error();
+        return;
     }
     try {
         var result = vimeo.editVideo(videoId, data);

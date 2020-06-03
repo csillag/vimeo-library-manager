@@ -53,6 +53,8 @@ export function updateVideoData(videoId: string, dataString: string) {
     console.error(
       "This session doesn't have EDIT scope. Please log out and log in again, with the correct permissions."
     );
+    console.error();
+    return;
   }
 
   try {
