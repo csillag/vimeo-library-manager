@@ -3,7 +3,7 @@
  */
 import { APP_NAME, log } from "./common";
 import { loadConfig, saveConfig } from "./config";
-import { Api, ApiHandler } from "./lib/vimeo-access";
+import { SyncApi, SyncApiHandler } from "./lib/vimeo-access-sync";
 
 export function testAccess() {
   console.log();
@@ -22,16 +22,14 @@ export function testAccess() {
     if (!vimeo) {
       return;
     }
-    vimeo.tutorial().then(
-      (foo: any) => {
-        console.log("Test API call says: ", foo);
-        console.log();
-      },
-      (err: any) => {
-        console.error("Error while executing test API call:", err);
-        console.error();
-      }
-    );
+    try {
+      const foo = vimeo.tutorial();
+      console.log("Test API call says: ", foo);
+      console.log();
+    } catch (err) {
+      console.error("Error while executing test API call:", err);
+      console.error();
+    }
   } else {
     log("No access token found. Let's see if we could log in...");
     const client = getLoginClient();
@@ -64,7 +62,7 @@ export function initAccess(
   }
 }
 
-function getLoginClient(): Api | undefined {
+function getLoginClient(): SyncApi | undefined {
   const config = loadConfig();
   if (!config) {
     return;
@@ -89,14 +87,14 @@ function getLoginClient(): Api | undefined {
     );
   }
   log("Config is", config);
-  return new ApiHandler({
+  return new SyncApiHandler({
     clientId,
     clientSecret,
     redirectUrl,
   });
 }
 
-export function getNormalClient(): Api | undefined {
+export function getNormalClient(): SyncApi | undefined {
   const config = loadConfig();
   if (!config) {
     return;
@@ -121,7 +119,7 @@ export function getNormalClient(): Api | undefined {
     );
   }
   log("Config is", config);
-  return new ApiHandler({
+  return new SyncApiHandler({
     clientId,
     clientSecret,
     accessToken,
@@ -154,23 +152,33 @@ export function finishLogin(code: string) {
   console.log();
   console.log("Attempting to log in...");
   console.log();
-  vimeo.finishLogin(code).then(
-    (info) => {
-      const { user, scopes, accessToken } = info;
-      console.log("Logged in as", user, "!");
+  try {
+    const info = vimeo.finishLogin(code);
+    const { user, scopes, accessToken } = info;
+    console.log("Logged in as", user, "!");
 
-      const config = loadConfig()!;
-      config.accessToken = accessToken;
-      config.user = user;
-      config.scopes = scopes;
-      saveConfig(config);
-      console.log();
-      console.log("Now you can use all functions.");
-      console.log();
-    },
-    (error) => {
-      console.error("Failed to log in:", error);
-      console.error();
-    }
-  );
+    const config = loadConfig()!;
+    config.accessToken = accessToken;
+    config.user = user;
+    config.scopes = scopes;
+    saveConfig(config);
+    console.log();
+    console.log("Now you can use all functions.");
+    console.log();
+  } catch (error) {
+    console.error("Failed to log in:", error);
+    console.error();
+  }
+}
+
+export function logout() {
+  const config = loadConfig()!;
+  // TODO: Actually invalidate the token, instead of just dropping it
+  delete config.accessToken;
+  delete config.user;
+  delete config.scopes;
+  saveConfig(config);
+  console.log();
+  console.log("Logged out from vimeo.");
+  console.log();
 }

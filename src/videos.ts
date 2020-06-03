@@ -9,21 +9,19 @@ export function listVideos() {
 
   const config = loadConfig()!;
   const { user } = config;
+  console.log();
   console.log("Listing videos for", user, "...");
-
-  vimeo.listMyVideos().then(
-    (results) => {
-      console.log();
-      console.log("Found", results.length, "videos:");
-      console.log();
-      results.forEach((video) => {
-        const { link, name } = video;
-        console.log(link, "\t\t", name);
-      });
-      console.log();
-    },
-    (error) => {
-      console.error(error);
-    }
-  );
+  console.log();
+  try {
+    const results = vimeo.listMyVideos();
+    console.log("Found", results.length, "videos:");
+    console.log();
+    results.forEach((video) => {
+      const { link, name } = video;
+      console.log(link, "\t\t", name);
+    });
+    console.log();
+  } catch (error) {
+    console.error(error);
+  }
 }

@@ -4,6 +4,12 @@ import { Vimeo } from "vimeo";
 
 const SCOPES = "public create interact private edit delete";
 
+function parseError(err: any): string {
+  const data = JSON.parse(err.message);
+  const { error, developer_message } = data;
+  return error + " " + developer_message;
+}
+
 export class ApiHandler implements Api {
   private readonly _client: Vimeo;
 
@@ -60,18 +66,18 @@ export class ApiHandler implements Api {
   }
 
   tutorial() {
-    return new Promise((resolve, reject) => {
+    return new Promise<string>((resolve, reject) => {
       this._client.request(
         {
           method: "GET",
           path: "/tutorial",
         },
-        (error: any, body, _statusCode, _headers) => {
-          if (error) {
-            reject(error.message);
-            return;
+        (err: any, body, _statusCode, _headers) => {
+          if (err) {
+            reject(parseError(err));
+          } else {
+            resolve(body.message);
           }
-          resolve(body.message);
         }
       );
     });
@@ -86,22 +92,22 @@ export class ApiHandler implements Api {
         },
         (error: any, body, _statusCode, _headers) => {
           if (error) {
-            reject(error.message);
-            return;
+            reject(parseError(error));
+          } else {
+            const { total, page, per_page, data } = body;
+            console.log(
+              "There are",
+              total,
+              "videos total.",
+              "We are at page",
+              page,
+              ".",
+              "There are",
+              per_page,
+              "videos on each page."
+            );
+            resolve(data);
           }
-          const { total, page, per_page, data } = body;
-          console.log(
-            "There are",
-            total,
-            "videos total.",
-            "We are at page",
-            page,
-            ".",
-            "There are",
-            per_page,
-            "videos on each page."
-          );
-          resolve(data);
         }
       );
     });

@@ -1,6 +1,6 @@
-import { LoginInfo, Video } from "./Types";
+import { LoginInfo, Video } from "../vimeo-access";
 
-export interface Api {
+export interface SyncApi {
   /**
    * Get a login URL
    *
@@ -13,15 +13,15 @@ export interface Api {
    *
    * @param loginToken received via the redirect
    */
-  finishLogin(loginToken: string): Promise<LoginInfo>;
+  finishLogin(loginToken: string): LoginInfo;
 
   /**
    * Make a test API call
    */
-  tutorial(): Promise<string>;
+  tutorial(): string;
 
   /**
    * List the user's videos
    */
-  listMyVideos(): Promise<Video[]>;
+  listMyVideos(): Video[];
 }

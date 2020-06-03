@@ -3,6 +3,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ApiHandler = void 0;
 var vimeo_1 = require("vimeo");
 var SCOPES = "public create interact private edit delete";
+function parseError(err) {
+    var data = JSON.parse(err.message);
+    var error = data.error, developer_message = data.developer_message;
+    return error + " " + developer_message;
+}
 var ApiHandler = /** @class */ (function () {
     function ApiHandler(_auth, _params) {
         if (_params === void 0) { _params = {}; }
@@ -57,12 +62,13 @@ var ApiHandler = /** @class */ (function () {
             _this._client.request({
                 method: "GET",
                 path: "/tutorial",
-            }, function (error, body, _statusCode, _headers) {
-                if (error) {
-                    reject(error.message);
-                    return;
+            }, function (err, body, _statusCode, _headers) {
+                if (err) {
+                    reject(parseError(err));
                 }
-                resolve(body.message);
+                else {
+                    resolve(body.message);
+                }
             });
         });
     };
@@ -74,12 +80,13 @@ var ApiHandler = /** @class */ (function () {
                 path: "/me/videos",
             }, function (error, body, _statusCode, _headers) {
                 if (error) {
-                    reject(error.message);
-                    return;
+                    reject(parseError(error));
                 }
-                var total = body.total, page = body.page, per_page = body.per_page, data = body.data;
-                console.log("There are", total, "videos total.", "We are at page", page, ".", "There are", per_page, "videos on each page.");
-                resolve(data);
+                else {
+                    var total = body.total, page = body.page, per_page = body.per_page, data = body.data;
+                    console.log("There are", total, "videos total.", "We are at page", page, ".", "There are", per_page, "videos on each page.");
+                    resolve(data);
+                }
             });
         });
     };

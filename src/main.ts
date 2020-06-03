@@ -1,8 +1,15 @@
 #!/usr/bin/env node
 
+import Fiber = require("fibers");
 import process = require("process");
 import { program } from "./common";
-import { finishLogin, initAccess, startLogin, testAccess } from "./auth";
+import {
+  finishLogin,
+  initAccess,
+  logout,
+  startLogin,
+  testAccess,
+} from "./auth";
 import { listVideos } from "./videos";
 
 function configureCLI() {
@@ -35,6 +42,8 @@ function configureCLI() {
     .description("Finish the login process")
     .action(finishLogin);
 
+  program.command("logout").description("Log out from vimeo").action(logout);
+
   program
     .command("list-videos")
     .description("List my videos")
@@ -46,9 +55,4 @@ function main() {
   program.parse(process.argv);
 }
 
-main();
-
-//
-
-// const videos = v.listMyVideos();
-// console.log("My videos are", videos);
+Fiber(main).run();

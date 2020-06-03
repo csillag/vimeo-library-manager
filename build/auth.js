@@ -1,12 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.finishLogin = exports.startLogin = exports.getNormalClient = exports.initAccess = exports.testAccess = void 0;
+exports.logout = exports.finishLogin = exports.startLogin = exports.getNormalClient = exports.initAccess = exports.testAccess = void 0;
 /**
  * Test VIMEO API access
  */
 var common_1 = require("./common");
 var config_1 = require("./config");
-var vimeo_access_1 = require("./lib/vimeo-access");
+var vimeo_access_sync_1 = require("./lib/vimeo-access-sync");
 function testAccess() {
     console.log();
     console.log("Checking your Vimeo status...");
@@ -23,13 +23,15 @@ function testAccess() {
         if (!vimeo) {
             return;
         }
-        vimeo.tutorial().then(function (foo) {
+        try {
+            var foo = vimeo.tutorial();
             console.log("Test API call says: ", foo);
             console.log();
-        }, function (err) {
+        }
+        catch (err) {
             console.error("Error while executing test API call:", err);
             console.error();
-        });
+        }
     }
     else {
         common_1.log("No access token found. Let's see if we could log in...");
@@ -73,7 +75,7 @@ function getLoginClient() {
         console.error("You need to re-initiate your Vimeo access. (See the 'init' command.)");
     }
     common_1.log("Config is", config);
-    return new vimeo_access_1.ApiHandler({
+    return new vimeo_access_sync_1.SyncApiHandler({
         clientId: clientId,
         clientSecret: clientSecret,
         redirectUrl: redirectUrl,
@@ -98,7 +100,7 @@ function getNormalClient() {
         console.error("You need to log in to Vimeo. (See the 'start-login' command.)");
     }
     common_1.log("Config is", config);
-    return new vimeo_access_1.ApiHandler({
+    return new vimeo_access_sync_1.SyncApiHandler({
         clientId: clientId,
         clientSecret: clientSecret,
         accessToken: accessToken,
@@ -128,7 +130,8 @@ function finishLogin(code) {
     console.log();
     console.log("Attempting to log in...");
     console.log();
-    vimeo.finishLogin(code).then(function (info) {
+    try {
+        var info = vimeo.finishLogin(code);
         var user = info.user, scopes = info.scopes, accessToken = info.accessToken;
         console.log("Logged in as", user, "!");
         var config = config_1.loadConfig();
@@ -139,9 +142,22 @@ function finishLogin(code) {
         console.log();
         console.log("Now you can use all functions.");
         console.log();
-    }, function (error) {
+    }
+    catch (error) {
         console.error("Failed to log in:", error);
         console.error();
-    });
+    }
 }
 exports.finishLogin = finishLogin;
+function logout() {
+    var config = config_1.loadConfig();
+    // TODO: Actually invalidate the token, instead of just dropping it
+    delete config.accessToken;
+    delete config.user;
+    delete config.scopes;
+    config_1.saveConfig(config);
+    console.log();
+    console.log("Logged out from vimeo.");
+    console.log();
+}
+exports.logout = logout;

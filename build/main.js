@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+var Fiber = require("fibers");
 var process = require("process");
 var common_1 = require("./common");
 var auth_1 = require("./auth");
@@ -26,6 +27,7 @@ function configureCLI() {
         .command("finish-login <code>")
         .description("Finish the login process")
         .action(auth_1.finishLogin);
+    common_1.program.command("logout").description("Log out from vimeo").action(auth_1.logout);
     common_1.program
         .command("list-videos")
         .description("List my videos")
@@ -35,7 +37,4 @@ function main() {
     configureCLI();
     common_1.program.parse(process.argv);
 }
-main();
-//
-// const videos = v.listMyVideos();
-// console.log("My videos are", videos);
+Fiber(main).run();
