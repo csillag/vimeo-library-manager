@@ -2,7 +2,7 @@
  * Test VIMEO API access
  */
 import { APP_NAME, log } from "./common";
-import { loadConfig, saveConfig } from "./config";
+import { getConfig, saveConfig, setConfig } from "./config";
 import { AccessScope, SyncApi, SyncApiHandler } from "./lib/vimeo-access-sync";
 
 export function testAccess() {
@@ -10,7 +10,7 @@ export function testAccess() {
   console.log("Checking your Vimeo status...");
   console.log();
   log("Should test Vimeo access");
-  const config = loadConfig();
+  const config = getConfig();
   if (!config) {
     return;
   }
@@ -58,13 +58,14 @@ export function initAccess(
   redirectUrl: string
 ) {
   log("Init command called", clientId, clientSecret, redirectUrl);
-  if (
-    saveConfig({
-      clientId,
-      clientSecret,
-      redirectUrl,
-    })
-  ) {
+
+  setConfig({
+    clientId,
+    clientSecret,
+    redirectUrl,
+  });
+
+  if (saveConfig()) {
     console.log();
     console.log("OK, now you can execute the start-login command!");
     console.log();
@@ -72,7 +73,7 @@ export function initAccess(
 }
 
 function getLoginClient(): SyncApi | undefined {
-  const config = loadConfig();
+  const config = getConfig();
   if (!config) {
     return;
   }
@@ -104,7 +105,7 @@ function getLoginClient(): SyncApi | undefined {
 }
 
 export function getNormalClient(): SyncApi | undefined {
-  const config = loadConfig();
+  const config = getConfig();
   if (!config) {
     return;
   }
@@ -166,12 +167,12 @@ export function finishLogin(code: string) {
     const { userUri, userName, scopes, accessToken } = info;
     console.log("Logged in as", userUri, userName, "!");
 
-    const config = loadConfig()!;
+    const config = getConfig()!;
     config.accessToken = accessToken;
     config.userUri = userUri;
     config.userName = userName;
     config.scopes = scopes;
-    saveConfig(config);
+    saveConfig();
     console.log();
     console.log("Now you can use all functions.");
     console.log();
@@ -182,7 +183,7 @@ export function finishLogin(code: string) {
 }
 
 export function hasScope(scope: AccessScope): boolean {
-  const config = loadConfig();
+  const config = getConfig();
   if (!config) {
     return false;
   }
@@ -194,13 +195,13 @@ export function hasScope(scope: AccessScope): boolean {
 }
 
 export function logout() {
-  const config = loadConfig()!;
+  const config = getConfig()!;
   // TODO: Actually invalidate the token, instead of just dropping it
   delete config.accessToken;
   delete config.userUri;
   delete config.userName;
   delete config.scopes;
-  saveConfig(config);
+  saveConfig();
   console.log();
   console.log("Logged out from vimeo.");
   console.log();

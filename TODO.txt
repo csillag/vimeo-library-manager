@@ -1,5 +1,9 @@
 + When logging in, save user ID
 + Display user name
++ Check if we have edit permissions
++ config handler:
+  + have a local singleton object and exported function
+  + instead of loading, just return from cache
 
 = When updating video data:
   + Check if we have edit scope
@@ -7,16 +11,12 @@
   + Check if exists
   + Check if mine
   - Check if the data has changed
-- Check if we have edit permissions
-- Real logout
+
 - Factor out the VES library
 - Unite code with the VES library
 - Find field for file checksum
 - Upload file
 
-- config handler:
-  - have a local singleton object and exported function
-  - instead of loading, just return from cache
 
 - nicer login process
   - actually launch browser
@@ -25,3 +25,4 @@
   - save access token
   - close window
   - close server and exit
+- Real logout

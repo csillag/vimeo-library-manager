@@ -12,7 +12,7 @@ function testAccess() {
     console.log("Checking your Vimeo status...");
     console.log();
     common_1.log("Should test Vimeo access");
-    var config = config_1.loadConfig();
+    var config = config_1.getConfig();
     if (!config) {
         return;
     }
@@ -48,11 +48,12 @@ function testAccess() {
 exports.testAccess = testAccess;
 function initAccess(clientId, clientSecret, redirectUrl) {
     common_1.log("Init command called", clientId, clientSecret, redirectUrl);
-    if (config_1.saveConfig({
+    config_1.setConfig({
         clientId: clientId,
         clientSecret: clientSecret,
         redirectUrl: redirectUrl,
-    })) {
+    });
+    if (config_1.saveConfig()) {
         console.log();
         console.log("OK, now you can execute the start-login command!");
         console.log();
@@ -60,7 +61,7 @@ function initAccess(clientId, clientSecret, redirectUrl) {
 }
 exports.initAccess = initAccess;
 function getLoginClient() {
-    var config = config_1.loadConfig();
+    var config = config_1.getConfig();
     if (!config) {
         return;
     }
@@ -85,7 +86,7 @@ function getLoginClient() {
     });
 }
 function getNormalClient() {
-    var config = config_1.loadConfig();
+    var config = config_1.getConfig();
     if (!config) {
         return;
     }
@@ -137,12 +138,12 @@ function finishLogin(code) {
         var info = vimeo.finishLogin(code);
         var userUri = info.userUri, userName = info.userName, scopes = info.scopes, accessToken = info.accessToken;
         console.log("Logged in as", userUri, userName, "!");
-        var config = config_1.loadConfig();
+        var config = config_1.getConfig();
         config.accessToken = accessToken;
         config.userUri = userUri;
         config.userName = userName;
         config.scopes = scopes;
-        config_1.saveConfig(config);
+        config_1.saveConfig();
         console.log();
         console.log("Now you can use all functions.");
         console.log();
@@ -154,7 +155,7 @@ function finishLogin(code) {
 }
 exports.finishLogin = finishLogin;
 function hasScope(scope) {
-    var config = config_1.loadConfig();
+    var config = config_1.getConfig();
     if (!config) {
         return false;
     }
@@ -166,13 +167,13 @@ function hasScope(scope) {
 }
 exports.hasScope = hasScope;
 function logout() {
-    var config = config_1.loadConfig();
+    var config = config_1.getConfig();
     // TODO: Actually invalidate the token, instead of just dropping it
     delete config.accessToken;
     delete config.userUri;
     delete config.userName;
     delete config.scopes;
-    config_1.saveConfig(config);
+    config_1.saveConfig();
     console.log();
     console.log("Logged out from vimeo.");
     console.log();

@@ -133,7 +133,7 @@ var ApiHandler = /** @class */ (function () {
                     reject(parseError(error));
                 }
                 else {
-                    console.log(_body);
+                    // console.log(_body);
                     switch (statusCode) {
                         case 200:
                             resolve("The video was edited.");

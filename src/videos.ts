@@ -1,5 +1,5 @@
 import { getNormalClient, hasScope } from "./auth";
-import { loadConfig } from "./config";
+import { getConfig } from "./config";
 import { VideoData, VideoUpdateData } from "./lib/vimeo-access";
 
 export function listVideos() {
@@ -8,7 +8,7 @@ export function listVideos() {
     return;
   }
 
-  const config = loadConfig()!;
+  const config = getConfig()!;
   const { userName } = config;
   console.log();
   console.log("Listing videos for", userName, "...");
@@ -74,7 +74,7 @@ export function updateVideoData(videoId: string, options: any) {
     return;
   }
 
-  const config = loadConfig()!;
+  const config = getConfig()!;
   if (video.user.uri !== config.userUri) {
     console.error("I can only touch your videos.");
     console.error(
@@ -85,8 +85,6 @@ export function updateVideoData(videoId: string, options: any) {
     console.error();
     return;
   }
-
-  return;
 
   try {
     const result = vimeo!.editVideo(videoId, data);

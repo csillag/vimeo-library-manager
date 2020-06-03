@@ -8,7 +8,7 @@ function listVideos() {
     if (!vimeo) {
         return;
     }
-    var config = config_1.loadConfig();
+    var config = config_1.getConfig();
     var userName = config.userName;
     console.log();
     console.log("Listing videos for", userName, "...");
@@ -65,14 +65,13 @@ function updateVideoData(videoId, options) {
         console.error();
         return;
     }
-    var config = config_1.loadConfig();
+    var config = config_1.getConfig();
     if (video.user.uri !== config.userUri) {
         console.error("I can only touch your videos.");
         console.error("But this video is owned by:", video.user.uri, video.user.name);
         console.error();
         return;
     }
-    return;
     try {
         var result = vimeo.editVideo(videoId, data);
         console.log("Result is:", result);

@@ -15,7 +15,20 @@ interface Config {
 
 const getConfigFileName = () => program.opts().config;
 
-export function loadConfig(): Config | undefined {
+let _config: Config | undefined;
+
+export function setConfig(config: Config) {
+  _config = config;
+}
+
+export function getConfig(forceReload?: boolean) {
+  if (_config === undefined || !!forceReload) {
+    loadConfig();
+  }
+  return _config;
+}
+
+function loadConfig() {
   const fileName = getConfigFileName();
   let string: string;
   try {
@@ -25,6 +38,7 @@ export function loadConfig(): Config | undefined {
     console.error(
       "You need to initiate your Vimeo access. (See the 'init' command.)"
     );
+    _config = undefined;
     return;
   }
   let data: any;
@@ -35,12 +49,13 @@ export function loadConfig(): Config | undefined {
     console.error(
       "You need to initiate your Vimeo access. (See the 'init' command.)"
     );
+    _config = undefined;
     return;
   }
-  return data;
+  _config = data;
 }
 
-export function saveConfig(config: Config): boolean {
+export function saveConfig(): boolean {
   const fileName = getConfigFileName();
   const configFilePath = path.dirname(fileName);
   try {
@@ -49,7 +64,7 @@ export function saveConfig(config: Config): boolean {
     }
     fs.writeFileSync(
       fileName,
-      JSON.stringify(config, null, "  ") + "\n",
+      JSON.stringify(_config, null, "  ") + "\n",
       "utf8"
     );
     console.log("Saved config to", fileName);
