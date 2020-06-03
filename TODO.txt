@@ -1,0 +1,15 @@
++ When logging in, save user ID
++ Display user name
+
+- When updating video data:
+  - Check if exists
+  - Check if mine
+  - Check if we have edit scope
+  - Check if the data has changed
+  - Introduce sub-commands
+- Check if we have edit permissions
+- Real logout
+- Factor out the VES library
+- Unite code with the VES library
+- Find field for file checksum
+- Upload file

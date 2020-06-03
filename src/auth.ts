@@ -17,6 +17,13 @@ export function testAccess() {
   log("Config is", config);
   if (config.accessToken) {
     log("Apparently, there is an access token....");
+    console.log(
+      "Allegedly, you are logged in as",
+      config.userName,
+      "(",
+      config.userUri,
+      ")"
+    );
 
     const vimeo = getNormalClient();
     if (!vimeo) {
@@ -154,12 +161,13 @@ export function finishLogin(code: string) {
   console.log();
   try {
     const info = vimeo.finishLogin(code);
-    const { user, scopes, accessToken } = info;
-    console.log("Logged in as", user, "!");
+    const { userUri, userName, scopes, accessToken } = info;
+    console.log("Logged in as", userUri, userName, "!");
 
     const config = loadConfig()!;
     config.accessToken = accessToken;
-    config.user = user;
+    config.userUri = userUri;
+    config.userName = userName;
     config.scopes = scopes;
     saveConfig(config);
     console.log();
@@ -175,7 +183,8 @@ export function logout() {
   const config = loadConfig()!;
   // TODO: Actually invalidate the token, instead of just dropping it
   delete config.accessToken;
-  delete config.user;
+  delete config.userUri;
+  delete config.userName;
   delete config.scopes;
   saveConfig(config);
   console.log();

@@ -29,7 +29,8 @@ export interface ClientParams {
 
 export interface LoginInfo {
   accessToken: string;
-  user: string;
+  userUri: string;
+  userName: string;
   scopes: string[];
 }
 

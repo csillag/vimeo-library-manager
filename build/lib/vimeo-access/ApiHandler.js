@@ -54,7 +54,8 @@ var ApiHandler = /** @class */ (function () {
                 if (accessToken) {
                     resolve({
                         accessToken: accessToken,
-                        user: user.name,
+                        userUri: user.uri,
+                        userName: user.name,
                         scopes: scope.split(" "),
                     });
                 }

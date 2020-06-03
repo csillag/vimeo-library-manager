@@ -9,9 +9,9 @@ export function listVideos() {
   }
 
   const config = loadConfig()!;
-  const { user } = config;
+  const { userName } = config;
   console.log();
-  console.log("Listing videos for", user, "...");
+  console.log("Listing videos for", userName, "...");
   console.log();
   try {
     const results = vimeo.listMyVideos();

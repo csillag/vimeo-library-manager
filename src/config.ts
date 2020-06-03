@@ -7,7 +7,8 @@ interface Config {
   clientSecret: string;
   redirectUrl: string;
   accessToken?: string;
-  user?: string;
+  userName?: string;
+  userUri?: string;
   scopes?: string[];
 }
 

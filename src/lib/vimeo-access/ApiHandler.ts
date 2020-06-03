@@ -61,7 +61,8 @@ export class ApiHandler implements Api {
           if (accessToken) {
             resolve({
               accessToken,
-              user: user.name,
+              userUri: user.uri,
+              userName: user.name,
               scopes: scope.split(" "),
             });
           }

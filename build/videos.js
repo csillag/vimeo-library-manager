@@ -9,9 +9,9 @@ function listVideos() {
         return;
     }
     var config = config_1.loadConfig();
-    var user = config.user;
+    var userName = config.userName;
     console.log();
-    console.log("Listing videos for", user, "...");
+    console.log("Listing videos for", userName, "...");
     console.log();
     try {
         var results = vimeo.listMyVideos();
