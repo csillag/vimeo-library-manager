@@ -12,6 +12,7 @@ var SyncApiHandler = /** @class */ (function () {
         this.tutorial = fiber_async_function_wrappers_1.wrapPromiseAsync0(this._vimeoAsync.tutorial, this._vimeoAsync);
         this.listMyVideos = fiber_async_function_wrappers_1.wrapPromiseAsync0(this._vimeoAsync.listMyVideos, this._vimeoAsync);
         this.editVideo = fiber_async_function_wrappers_1.wrapPromiseAsync2(this._vimeoAsync.editVideo, this._vimeoAsync);
+        this.getVideo = fiber_async_function_wrappers_1.wrapPromiseAsync1(this._vimeoAsync.getVideo, this._vimeoAsync);
     }
     return SyncApiHandler;
 }());

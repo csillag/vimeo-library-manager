@@ -27,6 +27,11 @@ export interface Api {
   listMyVideos(): Promise<VideoData[]>;
 
   /**
+   * Get data about a video
+   */
+  getVideo(videoId: string): Promise<VideoData>;
+
+  /**
    * This method edits the specified video.
    */
   editVideo(videoId: string, data: VideoUpdateData): Promise<string>;

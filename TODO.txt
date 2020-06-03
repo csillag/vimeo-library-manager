@@ -3,9 +3,9 @@
 
 = When updating video data:
   + Check if we have edit scope
-  = Introduce sub-commands
-  - Check if exists
-  - Check if mine
+  + Introduce sub-commands
+  + Check if exists
+  + Check if mine
   - Check if the data has changed
 - Check if we have edit permissions
 - Real logout

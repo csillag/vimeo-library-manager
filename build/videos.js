@@ -56,6 +56,23 @@ function updateVideoData(videoId, options) {
         console.error();
         return;
     }
+    var video;
+    try {
+        video = vimeo.getVideo(videoId);
+    }
+    catch (error) {
+        console.error("Error while checking out requested video:", error);
+        console.error();
+        return;
+    }
+    var config = config_1.loadConfig();
+    if (video.user.uri !== config.userUri) {
+        console.error("I can only touch your videos.");
+        console.error("But this video is owned by:", video.user.uri, video.user.name);
+        console.error();
+        return;
+    }
+    return;
     try {
         var result = vimeo.editVideo(videoId, data);
         console.log("Result is:", result);

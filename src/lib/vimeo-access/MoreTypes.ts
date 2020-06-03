@@ -213,6 +213,11 @@ export interface VideoMetadata {
  */
 export interface User {
   /**
+   * The unique identifier of the user within Vimeo
+   */
+  uri: string;
+
+  /**
    * The user's display name.
    */
   name: string;

@@ -1,6 +1,6 @@
 import { getNormalClient, hasScope } from "./auth";
 import { loadConfig } from "./config";
-import { VideoUpdateData } from "./lib/vimeo-access";
+import { VideoData, VideoUpdateData } from "./lib/vimeo-access";
 
 export function listVideos() {
   const vimeo = getNormalClient();
@@ -65,8 +65,31 @@ export function updateVideoData(videoId: string, options: any) {
     return;
   }
 
+  let video: VideoData;
   try {
-    const result = vimeo.editVideo(videoId, data);
+    video = vimeo.getVideo(videoId);
+  } catch (error) {
+    console.error("Error while checking out requested video:", error);
+    console.error();
+    return;
+  }
+
+  const config = loadConfig()!;
+  if (video.user.uri !== config.userUri) {
+    console.error("I can only touch your videos.");
+    console.error(
+      "But this video is owned by:",
+      video.user.uri,
+      video.user.name
+    );
+    console.error();
+    return;
+  }
+
+  return;
+
+  try {
+    const result = vimeo!.editVideo(videoId, data);
     console.log("Result is:", result);
   } catch (error) {
     console.error("Error while editing video:", error);

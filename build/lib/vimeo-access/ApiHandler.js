@@ -103,6 +103,22 @@ var ApiHandler = /** @class */ (function () {
             });
         });
     };
+    ApiHandler.prototype.getVideo = function (videoId) {
+        var _this = this;
+        return new Promise(function (resolve, reject) {
+            _this._client.request({
+                method: "GET",
+                path: "/videos/" + videoId,
+            }, function (error, body, _statusCode, _headers) {
+                if (error) {
+                    reject(parseError(error));
+                }
+                else {
+                    resolve(body);
+                }
+            });
+        });
+    };
     ApiHandler.prototype.editVideo = function (videoId, data) {
         var _this = this;
         return new Promise(function (resolve, reject) {

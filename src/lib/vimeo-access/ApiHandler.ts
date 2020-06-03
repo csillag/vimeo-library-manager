@@ -132,6 +132,24 @@ export class ApiHandler implements Api {
     });
   }
 
+  getVideo(videoId: string): Promise<VideoData> {
+    return new Promise<VideoData>((resolve, reject) => {
+      this._client.request(
+        {
+          method: "GET",
+          path: "/videos/" + videoId,
+        },
+        (error: any, body, _statusCode, _headers) => {
+          if (error) {
+            reject(parseError(error));
+          } else {
+            resolve(body);
+          }
+        }
+      );
+    });
+  }
+
   editVideo(videoId: string, data: VideoUpdateData): Promise<string> {
     return new Promise<string>((resolve, reject) => {
       const path = "/videos/" + videoId;

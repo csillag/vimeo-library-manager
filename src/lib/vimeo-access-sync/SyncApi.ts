@@ -26,6 +26,11 @@ export interface SyncApi {
   listMyVideos(): VideoData[];
 
   /**
+   * Get a video
+   */
+  getVideo(videoId: string): VideoData;
+
+  /**
    * This method edits the specified video.
    */
   editVideo(videoId: string, data: VideoUpdateData): string;

@@ -22,7 +22,8 @@ export class SyncApiHandler implements SyncApi {
   readonly finishLogin: (loginToken: string) => LoginInfo;
   readonly tutorial: () => string;
   readonly listMyVideos: () => VideoData[];
-  readonly editVideo: (videoId: string, date: VideoUpdateData) => string;
+  readonly editVideo: (videoId: string, data: VideoUpdateData) => string;
+  readonly getVideo: (videoId: string) => VideoData;
 
   constructor(auth: AuthInfo, params?: ClientParams) {
     this._vimeoAsync = new ApiHandler(auth, params);
@@ -42,6 +43,10 @@ export class SyncApiHandler implements SyncApi {
     );
     this.editVideo = wrapPromiseAsync2(
       this._vimeoAsync.editVideo,
+      this._vimeoAsync
+    );
+    this.getVideo = wrapPromiseAsync1(
+      this._vimeoAsync.getVideo,
       this._vimeoAsync
     );
   }
