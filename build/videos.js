@@ -28,16 +28,22 @@ function listVideos() {
     }
 }
 exports.listVideos = listVideos;
-function updateVideoData(videoId, dataString) {
-    console.log();
+function updateVideoData(videoId, options) {
+    var title = options.title, description = options.description, custom = options.custom;
     var data = {};
     try {
-        data = JSON.parse(dataString);
+        data = JSON.parse(custom);
     }
     catch (error) {
         console.error("The data you specified is not valid JSON!");
         console.error();
         return;
+    }
+    if (title !== undefined) {
+        data.name = title;
+    }
+    if (description !== undefined) {
+        data.description = description;
     }
     console.log("Editing video", videoId, "with data", JSON.stringify(data, null, "  "));
     console.log();

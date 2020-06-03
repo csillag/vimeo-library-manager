@@ -44,17 +44,33 @@ Commands:
   finish-login <code>                                     Finish the login process
   logout                                                  Log out from vimeo
   list-videos                                             List my videos
-  edit-video <video-id> <data>                            Edit a video
+  update-data [options] <video-id>                        Update video data
   help [command]                                          display help for command
 ```
 
 ### Editing a video
 
-You must provide a valid JSON string, with escaping and all that.
+You can provide a valid JSON string, with escaping and all that, to set any obsecure property.
 About properties that can be edited, see [the API reference](https://developer.vimeo.com/api/reference/videos#edit_video).
 
-This example changes the title of a video:
+There are also shortcuts:
 
-`vimeo-library-manager edit-video 425342398 "{ \"name\": \"New title\" }"`
+```
+Usage: vimeo-library-manager update-data [options] <video-id>
+
+Update video data
+
+Options:
+  --title <title>              Set title
+  --description <description>  Set description
+  --custom <JSON-data>         Set custom data (default: "{}")
+  -h, --help                   display help for command
+```
+
+So, for example, to change the title and description of a video:
+
+```
+vimeo-library-manager update-data 425342398 --title "New title" --description "new desc"
+```
 
 

@@ -33,7 +33,10 @@ function configureCLI() {
         .description("List my videos")
         .action(videos_1.listVideos);
     common_1.program
-        .command("update-data <video-id> <data>")
+        .command("update-data <video-id>")
+        .option("--title <title>", "Set title")
+        .option("--description <description>", "Set description")
+        .option("--custom <JSON-data>", "Set custom data", "{}")
         .description("Update video data")
         .action(videos_1.updateVideoData);
 }

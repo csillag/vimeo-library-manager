@@ -2,14 +2,26 @@
 + Display user name
 
 = When updating video data:
+  + Check if we have edit scope
+  = Introduce sub-commands
   - Check if exists
   - Check if mine
-  + Check if we have edit scope
   - Check if the data has changed
-  - Introduce sub-commands
 - Check if we have edit permissions
 - Real logout
 - Factor out the VES library
 - Unite code with the VES library
 - Find field for file checksum
 - Upload file
+
+- config handler:
+  - have a local singleton object and exported function
+  - instead of loading, just return from cache
+
+- nicer login process
+  - actually launch browser
+  - run web server to accept redirect
+  - actually compare state token
+  - save access token
+  - close window
+  - close server and exit

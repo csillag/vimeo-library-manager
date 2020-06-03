@@ -27,15 +27,22 @@ export function listVideos() {
   }
 }
 
-export function updateVideoData(videoId: string, dataString: string) {
-  console.log();
+export function updateVideoData(videoId: string, options: any) {
+  const { title, description, custom } = options;
+
   let data: VideoUpdateData = {};
   try {
-    data = JSON.parse(dataString);
+    data = JSON.parse(custom);
   } catch (error) {
     console.error("The data you specified is not valid JSON!");
     console.error();
     return;
+  }
+  if (title !== undefined) {
+    data.name = title;
+  }
+  if (description !== undefined) {
+    data.description = description;
   }
   console.log(
     "Editing video",
@@ -44,6 +51,7 @@ export function updateVideoData(videoId: string, dataString: string) {
     JSON.stringify(data, null, "  ")
   );
   console.log();
+
   const vimeo = getNormalClient();
   if (!vimeo) {
     return;
