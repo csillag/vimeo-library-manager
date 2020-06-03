@@ -13,7 +13,7 @@ import {
 import { listVideos } from "./videos";
 
 function configureCLI() {
-  program.version("0.0.1");
+  program.version("0.0.3");
   program
     .option(
       "-c, --config <config-file>",

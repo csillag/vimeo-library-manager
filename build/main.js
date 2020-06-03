@@ -7,7 +7,7 @@ var common_1 = require("./common");
 var auth_1 = require("./auth");
 var videos_1 = require("./videos");
 function configureCLI() {
-    common_1.program.version("0.0.1");
+    common_1.program.version("0.0.3");
     common_1.program
         .option("-c, --config <config-file>", "path to config file", process.env.HOME + "/.vimeo-library-manager/config.json")
         .option("-d, --debug", "output extra debugging");
