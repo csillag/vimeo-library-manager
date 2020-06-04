@@ -11,18 +11,19 @@
   + save access token
   + close server and exit
   + close browser window
-= When updating video data:
++ When updating video data:
   + Check if we have edit scope
   + Introduce sub-commands
   + Check if exists
   + Check if mine
-  - Check if the data has changed
+  + Check if the data has changed
 
 
 = video uploading
   + Check upload permissions
   - Find field for file checksum
   - Upload file
+- video replacement
 - Factor out the VES library
 - Unite code with the VES library
 - Real logout

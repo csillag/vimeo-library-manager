@@ -1,6 +1,8 @@
 import { getNormalClient, hasScope } from "./auth";
 import { getConfig } from "./config";
 import { VideoData, VideoUpdateData } from "./lib/vimeo-access";
+import { reduceChanges } from "./json-compare";
+import { log } from "./common";
 
 export function listVideos() {
   const vimeo = getNormalClient();
@@ -44,12 +46,7 @@ export function updateVideoData(videoId: string, options: any) {
   if (description !== undefined) {
     data.description = description;
   }
-  console.log(
-    "Editing video",
-    videoId,
-    "with data",
-    JSON.stringify(data, null, "  ")
-  );
+  log("Editing video", videoId, "with data", JSON.stringify(data, null, "  "));
   console.log();
 
   const vimeo = getNormalClient();
@@ -86,9 +83,21 @@ export function updateVideoData(videoId: string, options: any) {
     return;
   }
 
+  reduceChanges(data, video);
+
+  if (!Object.keys(data).length) {
+    console.log("Your video has all this data! Nothing to update.");
+    console.log();
+    return;
+  }
+
+  console.log("Actual changes:", JSON.stringify(data, null, "  "));
+  console.log();
+
   try {
     const result = vimeo!.editVideo(videoId, data);
     console.log("Result is:", result);
+    console.log();
   } catch (error) {
     console.error("Error while editing video:", error);
     console.error();

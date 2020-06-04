@@ -3,6 +3,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.updateVideoData = exports.listVideos = void 0;
 var auth_1 = require("./auth");
 var config_1 = require("./config");
+var json_compare_1 = require("./json-compare");
+var common_1 = require("./common");
 function listVideos() {
     var vimeo = auth_1.getNormalClient();
     if (!vimeo) {
@@ -45,7 +47,7 @@ function updateVideoData(videoId, options) {
     if (description !== undefined) {
         data.description = description;
     }
-    console.log("Editing video", videoId, "with data", JSON.stringify(data, null, "  "));
+    common_1.log("Editing video", videoId, "with data", JSON.stringify(data, null, "  "));
     console.log();
     var vimeo = auth_1.getNormalClient();
     if (!vimeo) {
@@ -72,9 +74,18 @@ function updateVideoData(videoId, options) {
         console.error();
         return;
     }
+    json_compare_1.reduceChanges(data, video);
+    if (!Object.keys(data).length) {
+        console.log("Your video has all this data! Nothing to update.");
+        console.log();
+        return;
+    }
+    console.log("Actual changes:", JSON.stringify(data, null, "  "));
+    console.log();
     try {
         var result = vimeo.editVideo(videoId, data);
         console.log("Result is:", result);
+        console.log();
     }
     catch (error) {
         console.error("Error while editing video:", error);
