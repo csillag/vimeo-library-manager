@@ -1,4 +1,9 @@
-import { LoginInfo, VideoData, VideoUpdateData } from "../vimeo-access";
+import {
+  LoginInfo,
+  UploadProgressCallback,
+  VideoData,
+  VideoUpdateData,
+} from "../vimeo-access";
 
 export interface SyncApi {
   /**
@@ -32,4 +37,13 @@ export interface SyncApi {
    * This method edits the specified video.
    */
   editVideo(videoId: string, data: VideoUpdateData): string;
+
+  /**
+   * Upload a new video
+   */
+  uploadVideo(
+      videoFileName: string,
+      data: VideoUpdateData,
+      onProgress: UploadProgressCallback
+  ): string;
 }

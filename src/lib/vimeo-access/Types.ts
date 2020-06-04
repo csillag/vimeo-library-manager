@@ -22,11 +22,12 @@ export interface AuthInfo {
 
 export type AccessScope =
   | "public"
-  | "create"
-  | "interact"
-  | "private"
-  | "edit"
-  | "delete";
+    | "create"
+    | "interact"
+    | "private"
+    | "edit"
+    | "upload"
+    | "delete";
 
 export interface ClientParams {
   /**
@@ -161,3 +162,10 @@ export interface VideoUpdateData {
   review?: any; // TODO
   spatial?: any; // TODO
 }
+
+export type UploadSuccessCallback = (videoUri: string) => void;
+export type UploadProgressCallback = (
+    bytesUploaded: number,
+    bytesTotal: number
+) => void;
+export type UploadFailCallback = (error: string) => void;

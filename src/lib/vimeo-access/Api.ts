@@ -1,5 +1,11 @@
-import { LoginInfo, VideoUpdateData } from "./Types";
-import { VideoData } from "./MoreTypes";
+import {
+    LoginInfo,
+    UploadFailCallback,
+    UploadProgressCallback,
+    UploadSuccessCallback,
+    VideoUpdateData,
+} from "./Types";
+import {VideoData} from "./MoreTypes";
 
 export interface Api {
   /**
@@ -26,13 +32,24 @@ export interface Api {
    */
   listMyVideos(): Promise<VideoData[]>;
 
-  /**
-   * Get data about a video
-   */
-  getVideo(videoId: string): Promise<VideoData>;
+    /**
+     * Get data about a video
+     */
+    getVideo(videoId: string): Promise<VideoData>;
 
-  /**
-   * This method edits the specified video.
-   */
-  editVideo(videoId: string, data: VideoUpdateData): Promise<string>;
+    /**
+     * This method edits the specified video.
+     */
+    editVideo(videoId: string, data: VideoUpdateData): Promise<string>;
+
+    /**
+     * Upload a new video
+     */
+    uploadVideo(
+        videoFileName: string,
+        data: VideoUpdateData,
+        onSuccess: UploadSuccessCallback,
+        onProgress: UploadProgressCallback,
+        onFail: UploadFailCallback
+    ): void;
 }

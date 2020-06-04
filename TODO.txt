@@ -23,12 +23,24 @@
 + Option for description from file
 + Option for custom JSON data from file
 + Option(s?) for privacy levels
+x Factor out the VES library
+x Unite code with the VES library
 
 = video uploading
   + Check upload permissions
-  - Find field for file checksum
-  - Upload file
+  + Create hash
+  + Find field for hash
+  + Upload in async api
+  + Upload in sync api
+  + Upload in app
+  + Do something with the result
+  + Show progress (first draft)
+  + Option to write video ID to file
+  - Show progress (fancy)
+  - Track Transcoding status
+  + Open in browser
+
 - video replacement
-- Factor out the VES library
-- Unite code with the VES library
+  - check hash
+
 - Real logout

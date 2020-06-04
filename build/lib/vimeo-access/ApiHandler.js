@@ -9,6 +9,7 @@ var wantedScopes = [
     "private",
     "edit",
     "delete",
+    "upload",
 ];
 function parseError(err) {
     try {
@@ -151,6 +152,9 @@ var ApiHandler = /** @class */ (function () {
                 }
             });
         });
+    };
+    ApiHandler.prototype.uploadVideo = function (videoFileName, data, onSuccess, onProgress, onFail) {
+        this._client.upload(videoFileName, data, onSuccess, onProgress, onFail);
     };
     return ApiHandler;
 }());

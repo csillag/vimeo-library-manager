@@ -1,9 +1,17 @@
-import { getNormalClient, hasScope } from "./auth";
-import { getConfig } from "./config";
-import { VideoData } from "./lib/vimeo-access";
-import { reduceChanges } from "./json-compare";
-import { log } from "./common";
-import { parseCommonOptions } from "./cli";
+const fs = require("fs");
+const openInBrowser = require("open");
+import {getNormalClient, hasScope} from "./auth";
+import {getConfig} from "./config";
+import {VideoData} from "./lib/vimeo-access";
+import {reduceChanges} from "./json-compare";
+import {log, showError} from "./common";
+import {parseCommonOptions} from "./cli";
+import {getHashSync} from "./hash";
+
+function describeVideo(video: VideoData) {
+  const {privacy, link, name} = video;
+  console.log(link, "\t\t", privacy.view, "\t", name);
+}
 
 export function listVideos() {
   const vimeo = getNormalClient();
@@ -12,7 +20,7 @@ export function listVideos() {
   }
 
   const config = getConfig()!;
-  const { userName } = config;
+  const {userName} = config;
   console.log();
   console.log("Listing videos for", userName, "...");
   console.log();
@@ -20,13 +28,10 @@ export function listVideos() {
     const results = vimeo.listMyVideos();
     console.log("Found", results.length, "videos:");
     console.log();
-    results.forEach((video) => {
-      const { privacy, link, name } = video;
-      console.log(link, "\t\t", privacy.view, "\t", name);
-    });
+    results.forEach(describeVideo);
     console.log();
   } catch (error) {
-    console.error(error);
+    showError(error);
   }
 }
 
@@ -44,10 +49,9 @@ export function updateVideoData(videoId: string, options: any) {
   }
 
   if (!hasScope("edit")) {
-    console.error(
-      "This session doesn't have EDIT scope. Please log out and log in again, with the correct permissions."
+    showError(
+        "This session doesn't have EDIT scope. Please log out and log in again, with the correct permissions."
     );
-    console.error();
     return;
   }
 
@@ -55,20 +59,17 @@ export function updateVideoData(videoId: string, options: any) {
   try {
     video = vimeo.getVideo(videoId);
   } catch (error) {
-    console.error("Error while checking out requested video:", error);
-    console.error();
+    showError("Error while checking out requested video:", error);
     return;
   }
 
   const config = getConfig()!;
   if (video.user.uri !== config.userUri) {
-    console.error("I can only touch your videos.");
-    console.error(
-      "But this video is owned by:",
-      video.user.uri,
-      video.user.name
+    showError(
+        "I can only touch your videos, but this video is owned by:",
+        video.user.uri,
+        video.user.name
     );
-    console.error();
     return;
   }
 
@@ -88,12 +89,52 @@ export function updateVideoData(videoId: string, options: any) {
     console.log("Result is:", result);
     console.log();
   } catch (error) {
-    console.error("Error while editing video:", error);
-    console.error();
+    showError("Error while editing video:", error);
   }
 }
 
-export function uploadVideo(videoFile: string, options: any) {
+export function uploadVideo(videoFileName: string, options: any) {
   const data = parseCommonOptions(options);
-  console.log("Should upload video", videoFile, "data:", data);
+  const hash = getHashSync(videoFileName);
+  Object.assign(data, {embed: {logos: {custom: {link: hash}}}});
+  console.log(
+      "Should upload video",
+      videoFileName,
+      "data:",
+      JSON.stringify(data, null, "  ")
+  );
+  const vimeo = getNormalClient();
+  if (!vimeo) {
+    return;
+  }
+  let videoId: string;
+  const {writeIdTo} = options;
+  try {
+    const uri = vimeo.uploadVideo(videoFileName, data!, (uploaded, total) => {
+      console.log("Uploaded " + Math.round((100 * uploaded) / total) + "%");
+    });
+    videoId = uri.substr(8);
+  } catch (error) {
+    showError(error);
+    return;
+  }
+  if (writeIdTo !== undefined) {
+    try {
+      fs.writeFileSync(writeIdTo, videoId);
+    } catch (error) {
+      showError("Error saving video ID to '" + writeIdTo + "':", error);
+    }
+  }
+  const {open} = options;
+  console.log();
+  console.log("Checking end result...");
+  console.log();
+  const video = vimeo.getVideo(videoId);
+  describeVideo(video);
+  if (open) {
+    console.log("Opening video in browser...");
+    console.log();
+    openInBrowser(video.link);
+  }
+  console.log();
 }

@@ -9,3 +9,9 @@ export function log(...stuff: any[]) {
     console.log(...stuff);
   }
 }
+
+export function showError(...stuff: any[]) {
+  console.error();
+  console.error(...stuff);
+  console.error();
+}

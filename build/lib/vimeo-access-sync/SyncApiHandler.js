@@ -15,7 +15,19 @@ var SyncApiHandler = /** @class */ (function () {
         this.listMyVideos = fiber_async_function_wrappers_1.wrapPromiseAsync0(this._vimeoAsync.listMyVideos, this._vimeoAsync);
         this.editVideo = fiber_async_function_wrappers_1.wrapPromiseAsync2(this._vimeoAsync.editVideo, this._vimeoAsync);
         this.getVideo = fiber_async_function_wrappers_1.wrapPromiseAsync1(this._vimeoAsync.getVideo, this._vimeoAsync);
+        this.uploadVideo = fiber_async_function_wrappers_1.wrapPromiseAsync3(this._uploadVideoPromise, this);
     }
+
+    SyncApiHandler.prototype._uploadVideoPromise = function (videoFileName, data, onProgress) {
+        var _this = this;
+        return new Promise(function (resolve, reject) {
+            _this._vimeoAsync.uploadVideo(videoFileName, data, function (url) {
+                resolve(url);
+            }, onProgress, function (error) {
+                reject(error);
+            });
+        });
+    };
     return SyncApiHandler;
 }());
 exports.SyncApiHandler = SyncApiHandler;

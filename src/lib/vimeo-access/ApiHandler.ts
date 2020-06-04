@@ -4,6 +4,9 @@ import {
   AuthInfo,
   ClientParams,
   LoginInfo,
+  UploadFailCallback,
+  UploadProgressCallback,
+  UploadSuccessCallback,
   VideoUpdateData,
 } from "./Types";
 import { Vimeo } from "vimeo";
@@ -16,6 +19,7 @@ const wantedScopes: AccessScope[] = [
   "private",
   "edit",
   "delete",
+  "upload",
 ];
 
 function parseError(err: any): string {
@@ -185,5 +189,15 @@ export class ApiHandler implements Api {
         }
       );
     });
+  }
+
+  uploadVideo(
+      videoFileName: string,
+      data: VideoUpdateData,
+      onSuccess: UploadSuccessCallback,
+      onProgress: UploadProgressCallback,
+      onFail: UploadFailCallback
+  ) {
+    this._client.upload(videoFileName, data, onSuccess, onProgress, onFail);
   }
 }

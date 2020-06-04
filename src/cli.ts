@@ -163,9 +163,15 @@ export function configureCLI() {
     .description("Update video meta-data")
     .action(updateVideoData);
 
-  const upload = program.command("upload-video <video-file>", { hidden: true });
+  const upload = program.command("upload-video <video-file>");
   // @ts-ignore
   addCommonOptions(upload)
+      .option(
+          "--write-id-to <id-file>",
+          "Write the ID of the new video to a file"
+      )
+      .option("--wait-for-transcoding", "Wait until transcoding finishes")
+      .option("--open", "Open in browser when ready")
     .description("Upload a new video")
     .action(uploadVideo);
 }
