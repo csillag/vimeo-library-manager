@@ -1,8 +1,9 @@
 import { getNormalClient, hasScope } from "./auth";
 import { getConfig } from "./config";
-import { VideoData, VideoUpdateData } from "./lib/vimeo-access";
+import { VideoData } from "./lib/vimeo-access";
 import { reduceChanges } from "./json-compare";
 import { log } from "./common";
+import { parseCommonOptions } from "./cli";
 
 export function listVideos() {
   const vimeo = getNormalClient();
@@ -30,21 +31,9 @@ export function listVideos() {
 }
 
 export function updateVideoData(videoId: string, options: any) {
-  const { title, description, custom } = options;
-
-  let data: VideoUpdateData = {};
-  try {
-    data = JSON.parse(custom);
-  } catch (error) {
-    console.error("The data you specified is not valid JSON!");
-    console.error();
+  const data = parseCommonOptions(options);
+  if (!data) {
     return;
-  }
-  if (title !== undefined) {
-    data.name = title;
-  }
-  if (description !== undefined) {
-    data.description = description;
   }
   log("Editing video", videoId, "with data", JSON.stringify(data, null, "  "));
   console.log();
@@ -102,4 +91,9 @@ export function updateVideoData(videoId: string, options: any) {
     console.error("Error while editing video:", error);
     console.error();
   }
+}
+
+export function uploadVideo(videoFile: string, options: any) {
+  const data = parseCommonOptions(options);
+  console.log("Should upload video", videoFile, "data:", data);
 }

@@ -21,8 +21,14 @@ const wantedScopes: AccessScope[] = [
 function parseError(err: any): string {
   try {
     const data = JSON.parse(err.message);
-    const { error, developer_message } = data;
-    return error + (!developer_message ? "" : " " + developer_message);
+    const { error, developer_message, invalid_parameters } = data;
+    return (
+      error +
+      (!developer_message ? "" : " " + developer_message) +
+      (!invalid_parameters
+        ? ""
+        : JSON.stringify(invalid_parameters, null, "  "))
+    );
   } catch (error) {
     return err.message;
   }

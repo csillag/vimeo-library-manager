@@ -13,8 +13,12 @@ var wantedScopes = [
 function parseError(err) {
     try {
         var data = JSON.parse(err.message);
-        var error = data.error, developer_message = data.developer_message;
-        return error + (!developer_message ? "" : " " + developer_message);
+        var error = data.error, developer_message = data.developer_message, invalid_parameters = data.invalid_parameters;
+        return (error +
+            (!developer_message ? "" : " " + developer_message) +
+            (!invalid_parameters
+                ? ""
+                : JSON.stringify(invalid_parameters, null, "  ")));
     }
     catch (error) {
         return err.message;

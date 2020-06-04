@@ -18,6 +18,11 @@
   + Check if mine
   + Check if the data has changed
 
++ Common definition of options for upload and edit
++ Common interpretation of options for upload and edit
++ Option for description from file
++ Option for custom JSON data from file
++ Option(s?) for privacy levels
 
 = video uploading
   + Check upload permissions

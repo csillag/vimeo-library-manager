@@ -43,11 +43,11 @@ Commands:
   login                                                   Start the login process
   logout                                                  Log out from vimeo
   list-videos                                             List my videos
-  update-data [options] <video-id>                        Update video data
+  update-data [options] <video-id>                        Update video meta-data
   help [command]                                          display help for command
 ```
 
-### Editing a video
+### Editing the meda-data of a video
 
 You can provide a valid JSON string, with escaping and all that, to set any obsecure property.
 About properties that can be edited, see [the API reference](https://developer.vimeo.com/api/reference/videos#edit_video).
@@ -57,19 +57,29 @@ There are also shortcuts:
 ```
 Usage: vimeo-library-manager update-data [options] <video-id>
 
-Update video data
+Update video meta-data
 
 Options:
-  --title <title>              Set title
-  --description <description>  Set description
-  --custom <JSON-data>         Set custom data (default: "{}")
-  -h, --help                   display help for command
+  --set-title <title>                        Set title
+  --set-description <description>            Set description
+  --set-description-file <description-file>  Load description from a file
+  --set-custom <JSON-data>                   Set custom JSON data
+  --set-custom-file <JSON-data-file>         Set custom JSON data from a file
+  --set-privacy <policy>                     Set privacy policy
+  --set-password <password>                  Set the password
+  -h, --help                                 display help for command
+
 ```
 
 So, for example, to change the title and description of a video:
 
 ```
-vimeo-library-manager update-data 425342398 --title "New title" --description "new desc"
+vimeo-library-manager update-data 425342398 --set-title "New title" --set-description "new desc"
 ```
 
+To make it password protected:
+
+```
+vimeo-library-manager update-data 425342398 --set-password "magic"
+```
 

@@ -1,10 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateVideoData = exports.listVideos = void 0;
+exports.uploadVideo = exports.updateVideoData = exports.listVideos = void 0;
 var auth_1 = require("./auth");
 var config_1 = require("./config");
 var json_compare_1 = require("./json-compare");
 var common_1 = require("./common");
+var cli_1 = require("./cli");
 function listVideos() {
     var vimeo = auth_1.getNormalClient();
     if (!vimeo) {
@@ -31,21 +32,9 @@ function listVideos() {
 }
 exports.listVideos = listVideos;
 function updateVideoData(videoId, options) {
-    var title = options.title, description = options.description, custom = options.custom;
-    var data = {};
-    try {
-        data = JSON.parse(custom);
-    }
-    catch (error) {
-        console.error("The data you specified is not valid JSON!");
-        console.error();
+    var data = cli_1.parseCommonOptions(options);
+    if (!data) {
         return;
-    }
-    if (title !== undefined) {
-        data.name = title;
-    }
-    if (description !== undefined) {
-        data.description = description;
     }
     common_1.log("Editing video", videoId, "with data", JSON.stringify(data, null, "  "));
     console.log();
@@ -93,3 +82,8 @@ function updateVideoData(videoId, options) {
     }
 }
 exports.updateVideoData = updateVideoData;
+function uploadVideo(videoFile, options) {
+    var data = cli_1.parseCommonOptions(options);
+    console.log("Should upload video", videoFile, "data:", data);
+}
+exports.uploadVideo = uploadVideo;
