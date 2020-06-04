@@ -40,10 +40,16 @@ x Unite code with the VES library
   + Track Transcoding status
   + Open in browser
 
-- video replacement
-  - check hash
-  - replace
-  
+- proper pagination for list
 - delete videos
+- video replacement
+  - CLI
+  - async API
+  - sync api
+  - App code
+  - check hash
+
+
+
 
 - Real logout

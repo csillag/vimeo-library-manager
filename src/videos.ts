@@ -33,7 +33,7 @@ export function listVideos() {
     results.forEach(describeVideo);
     console.log();
   } catch (error) {
-    showError(error);
+    showError("Error while getting the list of videos:", error);
   }
 }
 
@@ -123,7 +123,7 @@ export function uploadVideo(videoFileName: string, options: any) {
     console.log();
     videoId = uri.substr(8);
   } catch (error) {
-    uploading.fail(error);
+    uploading.fail("Failed to upload video." + error);
     return;
   }
   const { writeIdTo } = options;

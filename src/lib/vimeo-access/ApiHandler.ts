@@ -112,30 +112,48 @@ export class ApiHandler implements Api {
     });
   }
 
-  listMyVideos(): Promise<VideoData[]> {
+  listMyVideos(wantedPage = 1, loaded: VideoData[] = []): Promise<VideoData[]> {
     return new Promise<VideoData[]>((resolve, reject) => {
       this._client.request(
         {
           method: "GET",
-          path: "/me/videos",
+          path: "/me/videos?page=" + wantedPage,
         },
         (error: any, body, _statusCode, _headers) => {
           if (error) {
             reject(parseError(error));
           } else {
-            const { total, page, per_page, data } = body;
-            console.log(
-              "There are",
-              total,
-              "videos total.",
-              "We are at page",
-              page,
-              ".",
-              "There are",
-              per_page,
-              "videos on each page."
-            );
-            resolve(data);
+            const { total, page: currentPage, per_page, data, ...rest } = body;
+            if (currentPage !== wantedPage) {
+              reject("I don't understand what is going on here.");
+              return;
+            }
+            // console.log(
+            //   "There are",
+            //   total,
+            //   "videos total.",
+            //   "We are at page",
+            //   currentPage,
+            //   ".",
+            //   "There are",
+            //   per_page,
+            //   "videos on each page."
+            // );
+            // console.log("Rest is data is", rest);
+            const totalPages = Math.ceil(total / per_page);
+            const isLast = totalPages === currentPage;
+            // console.log(
+            //   "There are",
+            //   totalPages,
+            //   "pages total. Are we on the last one?",
+            //   isLast
+            // );
+            const upToNow = [...loaded, ...data]; // Unite the already loaded and the new data
+            if (isLast) {
+              resolve(upToNow);
+            } else {
+              this.listMyVideos(wantedPage + 1, upToNow).then(resolve, reject);
+            }
           }
         }
       );

@@ -32,7 +32,7 @@ function listVideos() {
         console.log();
     }
     catch (error) {
-        common_1.showError(error);
+        common_1.showError("Error while getting the list of videos:", error);
     }
 }
 exports.listVideos = listVideos;
@@ -106,7 +106,7 @@ function uploadVideo(videoFileName, options) {
         videoId = uri.substr(8);
     }
     catch (error) {
-        uploading.fail(error);
+        uploading.fail("Failed to upload video." + error);
         return;
     }
     var writeIdTo = options.writeIdTo;
