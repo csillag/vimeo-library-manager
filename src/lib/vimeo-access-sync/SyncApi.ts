@@ -42,8 +42,8 @@ export interface SyncApi {
    * Upload a new video
    */
   uploadVideo(
-      videoFileName: string,
-      data: VideoUpdateData,
-      onProgress: UploadProgressCallback
+    videoFileName: string,
+    data: VideoUpdateData,
+    onProgress: UploadProgressCallback
   ): string;
 }

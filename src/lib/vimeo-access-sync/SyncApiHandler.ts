@@ -27,27 +27,27 @@ export class SyncApiHandler implements SyncApi {
   readonly editVideo: (videoId: string, data: VideoUpdateData) => string;
   readonly getVideo: (videoId: string) => VideoData;
   readonly uploadVideo: (
-      videoFileName: string,
-      data: VideoUpdateData,
-      onProgress: UploadProgressCallback
+    videoFileName: string,
+    data: VideoUpdateData,
+    onProgress: UploadProgressCallback
   ) => string;
 
   _uploadVideoPromise(
-      videoFileName: string,
-      data: VideoUpdateData,
-      onProgress: UploadProgressCallback
+    videoFileName: string,
+    data: VideoUpdateData,
+    onProgress: UploadProgressCallback
   ): Promise<string> {
     return new Promise<string>((resolve, reject) => {
       this._vimeoAsync.uploadVideo(
-          videoFileName,
-          data,
-          (url: string) => {
-            resolve(url);
-          },
-          onProgress,
-          (error: string) => {
-            reject(error);
-          }
+        videoFileName,
+        data,
+        (url: string) => {
+          resolve(url);
+        },
+        onProgress,
+        (error: string) => {
+          reject(error);
+        }
       );
     });
   }
@@ -56,10 +56,10 @@ export class SyncApiHandler implements SyncApi {
     this._vimeoAsync = new ApiHandler(auth, params);
 
     this.getLoginUrl = (stateToken: string) =>
-        this._vimeoAsync.getLoginUrl(stateToken);
+      this._vimeoAsync.getLoginUrl(stateToken);
     this.finishLogin = wrapPromiseAsync1(
-        this._vimeoAsync.finishLogin,
-        this._vimeoAsync
+      this._vimeoAsync.finishLogin,
+      this._vimeoAsync
     );
     this.tutorial = wrapPromiseAsync0(
       this._vimeoAsync.tutorial,
@@ -74,8 +74,8 @@ export class SyncApiHandler implements SyncApi {
       this._vimeoAsync
     );
     this.getVideo = wrapPromiseAsync1(
-        this._vimeoAsync.getVideo,
-        this._vimeoAsync
+      this._vimeoAsync.getVideo,
+      this._vimeoAsync
     );
     this.uploadVideo = wrapPromiseAsync3(this._uploadVideoPromise, this);
   }

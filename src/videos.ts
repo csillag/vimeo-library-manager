@@ -1,15 +1,15 @@
 const fs = require("fs");
 const openInBrowser = require("open");
-import {getNormalClient, hasScope} from "./auth";
-import {getConfig} from "./config";
-import {VideoData} from "./lib/vimeo-access";
-import {reduceChanges} from "./json-compare";
-import {log, showError} from "./common";
-import {parseCommonOptions} from "./cli";
-import {getHashSync} from "./hash";
+import { getNormalClient, hasScope } from "./auth";
+import { getConfig } from "./config";
+import { VideoData } from "./lib/vimeo-access";
+import { reduceChanges } from "./json-compare";
+import { log, showError } from "./common";
+import { parseCommonOptions } from "./cli";
+import { getHashSync } from "./hash";
 
 function describeVideo(video: VideoData) {
-  const {privacy, link, name} = video;
+  const { privacy, link, name } = video;
   console.log(link, "\t\t", privacy.view, "\t", name);
 }
 
@@ -20,7 +20,7 @@ export function listVideos() {
   }
 
   const config = getConfig()!;
-  const {userName} = config;
+  const { userName } = config;
   console.log();
   console.log("Listing videos for", userName, "...");
   console.log();
@@ -50,7 +50,7 @@ export function updateVideoData(videoId: string, options: any) {
 
   if (!hasScope("edit")) {
     showError(
-        "This session doesn't have EDIT scope. Please log out and log in again, with the correct permissions."
+      "This session doesn't have EDIT scope. Please log out and log in again, with the correct permissions."
     );
     return;
   }
@@ -66,9 +66,9 @@ export function updateVideoData(videoId: string, options: any) {
   const config = getConfig()!;
   if (video.user.uri !== config.userUri) {
     showError(
-        "I can only touch your videos, but this video is owned by:",
-        video.user.uri,
-        video.user.name
+      "I can only touch your videos, but this video is owned by:",
+      video.user.uri,
+      video.user.name
     );
     return;
   }
@@ -96,19 +96,19 @@ export function updateVideoData(videoId: string, options: any) {
 export function uploadVideo(videoFileName: string, options: any) {
   const data = parseCommonOptions(options);
   const hash = getHashSync(videoFileName);
-  Object.assign(data, {embed: {logos: {custom: {link: hash}}}});
+  Object.assign(data, { embed: { logos: { custom: { link: hash } } } });
   console.log(
-      "Should upload video",
-      videoFileName,
-      "data:",
-      JSON.stringify(data, null, "  ")
+    "Should upload video",
+    videoFileName,
+    "data:",
+    JSON.stringify(data, null, "  ")
   );
   const vimeo = getNormalClient();
   if (!vimeo) {
     return;
   }
   let videoId: string;
-  const {writeIdTo} = options;
+  const { writeIdTo } = options;
   try {
     const uri = vimeo.uploadVideo(videoFileName, data!, (uploaded, total) => {
       console.log("Uploaded " + Math.round((100 * uploaded) / total) + "%");
@@ -125,7 +125,7 @@ export function uploadVideo(videoFileName: string, options: any) {
       showError("Error saving video ID to '" + writeIdTo + "':", error);
     }
   }
-  const {open} = options;
+  const { open } = options;
   console.log();
   console.log("Checking end result...");
   console.log();
