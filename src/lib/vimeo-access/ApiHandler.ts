@@ -123,31 +123,13 @@ export class ApiHandler implements Api {
           if (error) {
             reject(parseError(error));
           } else {
-            const { total, page: currentPage, per_page, data, ...rest } = body;
+            const { total, page: currentPage, per_page, data } = body;
             if (currentPage !== wantedPage) {
               reject("I don't understand what is going on here.");
               return;
             }
-            // console.log(
-            //   "There are",
-            //   total,
-            //   "videos total.",
-            //   "We are at page",
-            //   currentPage,
-            //   ".",
-            //   "There are",
-            //   per_page,
-            //   "videos on each page."
-            // );
-            // console.log("Rest is data is", rest);
             const totalPages = Math.ceil(total / per_page);
             const isLast = totalPages === currentPage;
-            // console.log(
-            //   "There are",
-            //   totalPages,
-            //   "pages total. Are we on the last one?",
-            //   isLast
-            // );
             const upToNow = [...loaded, ...data]; // Unite the already loaded and the new data
             if (isLast) {
               resolve(upToNow);
@@ -239,6 +221,29 @@ export class ApiHandler implements Api {
       };
 
       checkStatus();
+    });
+  }
+
+  deleteVideo(videoIs: string): Promise<string> {
+    return new Promise<string>((resolve, reject) => {
+      this._client.request(
+        { method: "DELETE", path: "/videos/" + videoIs },
+        (error: any, _body, statusCode, _headers) => {
+          if (error) {
+            reject(parseError(error));
+            return;
+          } else {
+            switch (statusCode) {
+              case 204:
+                resolve("The video was deleted.");
+                break;
+              case 403:
+                reject("The authenticated user can't delete this video.");
+                break;
+            }
+          }
+        }
+      );
     });
   }
 }

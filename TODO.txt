@@ -40,8 +40,8 @@ x Unite code with the VES library
   + Track Transcoding status
   + Open in browser
 
-- proper pagination for list
-- delete videos
++ proper pagination for list
++ delete videos
 - video replacement
   - CLI
   - async API

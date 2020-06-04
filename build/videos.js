@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.uploadVideo = exports.updateVideoData = exports.listVideos = void 0;
+exports.deleteVideo = exports.uploadVideo = exports.updateVideoData = exports.listVideos = void 0;
 var fs = require("fs");
 var openInBrowser = require("open");
 var ora = require("ora");
@@ -148,3 +148,21 @@ function uploadVideo(videoFileName, options) {
     console.log();
 }
 exports.uploadVideo = uploadVideo;
+function deleteVideo(videoId) {
+    var vimeo = auth_1.getNormalClient();
+    if (!vimeo) {
+        return;
+    }
+    console.log("Deleting video", videoId);
+    console.log();
+    try {
+        vimeo.deleteVideo(videoId);
+        console.log("Deleted.");
+        console.log();
+    }
+    catch (error) {
+        common_1.showError("Error while deleting video '" + videoId + "':", error);
+        console.error();
+    }
+}
+exports.deleteVideo = deleteVideo;

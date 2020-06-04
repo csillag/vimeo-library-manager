@@ -128,6 +128,10 @@ function configureCLI() {
         .option("--open", "Open in browser when ready")
         .description("Upload a new video")
         .action(videos_1.uploadVideo);
+    common_1.program
+        .command("delete-video <video-id>")
+        .description("Delete a video")
+        .action(videos_1.deleteVideo);
 }
 exports.configureCLI = configureCLI;
 function runCommand() {

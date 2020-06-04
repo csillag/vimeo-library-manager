@@ -8,7 +8,12 @@ import {
   startLogin,
   testAccess,
 } from "./auth";
-import { listVideos, updateVideoData, uploadVideo } from "./videos";
+import {
+  deleteVideo,
+  listVideos,
+  updateVideoData,
+  uploadVideo,
+} from "./videos";
 import { VideoUpdateData } from "./lib/vimeo-access";
 
 /**
@@ -174,6 +179,11 @@ export function configureCLI() {
     .option("--open", "Open in browser when ready")
     .description("Upload a new video")
     .action(uploadVideo);
+
+  program
+    .command("delete-video <video-id>")
+    .description("Delete a video")
+    .action(deleteVideo);
 }
 
 export function runCommand() {

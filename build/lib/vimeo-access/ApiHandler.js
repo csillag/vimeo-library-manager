@@ -1,15 +1,4 @@
 "use strict";
-var __rest = (this && this.__rest) || function (s, e) {
-    var t = {};
-    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
-        t[p] = s[p];
-    if (s != null && typeof Object.getOwnPropertySymbols === "function")
-        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) {
-            if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i]))
-                t[p[i]] = s[p[i]];
-        }
-    return t;
-};
 var __spreadArrays = (this && this.__spreadArrays) || function () {
     for (var s = 0, i = 0, il = arguments.length; i < il; i++) s += arguments[i].length;
     for (var r = Array(s), k = 0, i = 0; i < il; i++)
@@ -121,31 +110,13 @@ var ApiHandler = /** @class */ (function () {
                     reject(parseError(error));
                 }
                 else {
-                    var total = body.total, currentPage = body.page, per_page = body.per_page, data = body.data, rest = __rest(body, ["total", "page", "per_page", "data"]);
+                    var total = body.total, currentPage = body.page, per_page = body.per_page, data = body.data;
                     if (currentPage !== wantedPage) {
                         reject("I don't understand what is going on here.");
                         return;
                     }
-                    // console.log(
-                    //   "There are",
-                    //   total,
-                    //   "videos total.",
-                    //   "We are at page",
-                    //   currentPage,
-                    //   ".",
-                    //   "There are",
-                    //   per_page,
-                    //   "videos on each page."
-                    // );
-                    // console.log("Rest is data is", rest);
                     var totalPages = Math.ceil(total / per_page);
                     var isLast = totalPages === currentPage;
-                    // console.log(
-                    //   "There are",
-                    //   totalPages,
-                    //   "pages total. Are we on the last one?",
-                    //   isLast
-                    // );
                     var upToNow = __spreadArrays(loaded, data); // Unite the already loaded and the new data
                     if (isLast) {
                         resolve(upToNow);
@@ -225,6 +196,27 @@ var ApiHandler = /** @class */ (function () {
                 }, reject);
             };
             checkStatus();
+        });
+    };
+    ApiHandler.prototype.deleteVideo = function (videoIs) {
+        var _this = this;
+        return new Promise(function (resolve, reject) {
+            _this._client.request({ method: "DELETE", path: "/videos/" + videoIs }, function (error, _body, statusCode, _headers) {
+                if (error) {
+                    reject(parseError(error));
+                    return;
+                }
+                else {
+                    switch (statusCode) {
+                        case 204:
+                            resolve("The video was deleted.");
+                            break;
+                        case 403:
+                            reject("The authenticated user can't delete this video.");
+                            break;
+                    }
+                }
+            });
         });
     };
     return ApiHandler;

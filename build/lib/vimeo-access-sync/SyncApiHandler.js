@@ -17,6 +17,7 @@ var SyncApiHandler = /** @class */ (function () {
         this.getVideo = fiber_async_function_wrappers_1.wrapPromiseAsync1(this._vimeoAsync.getVideo, this._vimeoAsync);
         this.uploadVideo = fiber_async_function_wrappers_1.wrapPromiseAsync3(this._uploadVideoPromise, this);
         this.waitForEncoding = fiber_async_function_wrappers_1.wrapPromiseAsync1(this._vimeoAsync.waitForEncoding, this._vimeoAsync);
+        this.deleteVideo = fiber_async_function_wrappers_1.wrapPromiseAsync1(this._vimeoAsync.deleteVideo, this._vimeoAsync);
     }
     SyncApiHandler.prototype._uploadVideoPromise = function (videoFileName, data, onProgress) {
         var _this = this;

@@ -164,3 +164,20 @@ export function uploadVideo(videoFileName: string, options: any) {
   }
   console.log();
 }
+
+export function deleteVideo(videoId: string) {
+  const vimeo = getNormalClient();
+  if (!vimeo) {
+    return;
+  }
+  console.log("Deleting video", videoId);
+  console.log();
+  try {
+    vimeo.deleteVideo(videoId);
+    console.log("Deleted.");
+    console.log();
+  } catch (error) {
+    showError("Error while deleting video '" + videoId + "':", error);
+    console.error();
+  }
+}

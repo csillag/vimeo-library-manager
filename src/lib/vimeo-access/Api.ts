@@ -57,4 +57,9 @@ export interface Api {
    * Wait for encoding to finish on a video
    */
   waitForEncoding(videoId: string): Promise<void>;
+
+  /**
+   * Delete a video
+   */
+  deleteVideo(videoIs: string): Promise<string>;
 }

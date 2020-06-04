@@ -51,4 +51,9 @@ export interface SyncApi {
    * Wait for video encoding to finish
    */
   waitForEncoding(videoId: string): void;
+
+  /**
+   * Delete a video
+   */
+  deleteVideo(videoIs: string): string;
 }
