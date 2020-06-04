@@ -11,8 +11,8 @@ import { parseCommonOptions } from "./cli";
 import { getHashSync } from "./hash";
 
 function describeVideo(video: VideoData) {
-  const { privacy, link, name } = video;
-  console.log(link, "\t\t", privacy.view, "\t", name);
+  const { privacy, link, name, duration } = video;
+  console.log(link, "(", duration, ")", "\t\t", privacy.view, "\t", name);
 }
 
 export function listVideos() {

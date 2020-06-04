@@ -11,8 +11,8 @@ var common_1 = require("./common");
 var cli_1 = require("./cli");
 var hash_1 = require("./hash");
 function describeVideo(video) {
-    var privacy = video.privacy, link = video.link, name = video.name;
-    console.log(link, "\t\t", privacy.view, "\t", name);
+    var privacy = video.privacy, link = video.link, name = video.name, duration = video.duration;
+    console.log(link, "(", duration, ")", "\t\t", privacy.view, "\t", name);
 }
 function listVideos() {
     var vimeo = auth_1.getNormalClient();
