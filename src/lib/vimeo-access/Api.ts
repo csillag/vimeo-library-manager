@@ -52,4 +52,9 @@ export interface Api {
     onProgress: UploadProgressCallback,
     onFail: UploadFailCallback
   ): void;
+
+  /**
+   * Wait for encoding to finish on a video
+   */
+  waitForEncoding(videoId: string): Promise<void>;
 }

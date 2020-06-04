@@ -26,7 +26,7 @@
 x Factor out the VES library
 x Unite code with the VES library
 
-= video uploading
++ video uploading
   + Check upload permissions
   + Create hash
   + Find field for hash
@@ -36,11 +36,14 @@ x Unite code with the VES library
   + Do something with the result
   + Show progress (first draft)
   + Option to write video ID to file
-  - Show progress (fancy)
-  - Track Transcoding status
+  + Show progress (fancy)
+  + Track Transcoding status
   + Open in browser
 
 - video replacement
   - check hash
+  - replace
+  
+- delete videos
 
 - Real logout

@@ -46,4 +46,9 @@ export interface SyncApi {
     data: VideoUpdateData,
     onProgress: UploadProgressCallback
   ): string;
+
+  /**
+   * Wait for video encoding to finish
+   */
+  waitForEncoding(videoId: string): void;
 }

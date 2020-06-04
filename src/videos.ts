@@ -1,5 +1,7 @@
 const fs = require("fs");
 const openInBrowser = require("open");
+const ora = require("ora");
+
 import { getNormalClient, hasScope } from "./auth";
 import { getConfig } from "./config";
 import { VideoData } from "./lib/vimeo-access";
@@ -103,21 +105,28 @@ export function uploadVideo(videoFileName: string, options: any) {
     "data:",
     JSON.stringify(data, null, "  ")
   );
+  console.log();
   const vimeo = getNormalClient();
   if (!vimeo) {
     return;
   }
   let videoId: string;
-  const { writeIdTo } = options;
+  const uploading = ora({
+    text: "Uploading video ...",
+    prefixText: " ",
+  }).start();
   try {
     const uri = vimeo.uploadVideo(videoFileName, data!, (uploaded, total) => {
-      console.log("Uploaded " + Math.round((100 * uploaded) / total) + "%");
+      uploading.text = "Uploaded " + Math.round((100 * uploaded) / total) + "%";
     });
+    uploading.succeed("Video uploaded successfully.");
+    console.log();
     videoId = uri.substr(8);
   } catch (error) {
-    showError(error);
+    uploading.fail(error);
     return;
   }
+  const { writeIdTo } = options;
   if (writeIdTo !== undefined) {
     try {
       fs.writeFileSync(writeIdTo, videoId);
@@ -125,12 +134,29 @@ export function uploadVideo(videoFileName: string, options: any) {
       showError("Error saving video ID to '" + writeIdTo + "':", error);
     }
   }
-  const { open } = options;
-  console.log();
+  const { waitForEncoding, open } = options;
+
+  if (waitForEncoding) {
+    const encoding = ora({
+      text: "Waiting for encoding to finish...",
+      prefixText: " ",
+    }).start();
+    try {
+      console.log();
+      vimeo.waitForEncoding(videoId);
+      encoding.succeed("Video encoded successfully.");
+      console.log();
+    } catch (error) {
+      encoding.fail("Encoding failed");
+      console.error();
+    }
+  }
+
   console.log("Checking end result...");
   console.log();
   const video = vimeo.getVideo(videoId);
   describeVideo(video);
+  console.log();
   if (open) {
     console.log("Opening video in browser...");
     console.log();

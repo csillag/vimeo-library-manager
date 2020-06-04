@@ -266,6 +266,10 @@ export interface VideoUploaderApp {
   uri: string;
 }
 
+export interface Transcode {
+  status: "complete" | "error" | "in_progress";
+}
+
 /**
  * Data for a video
  *
@@ -453,5 +457,5 @@ export interface VideoData {
   /**
    * The transcode information for a video upload.
    */
-  transcode: any; // TODO
+  transcode: Transcode;
 }

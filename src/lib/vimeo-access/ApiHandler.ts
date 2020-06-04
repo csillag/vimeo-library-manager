@@ -200,4 +200,27 @@ export class ApiHandler implements Api {
   ) {
     this._client.upload(videoFileName, data, onSuccess, onProgress, onFail);
   }
+
+  waitForEncoding(videoId: string): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+      const checkStatus = () => {
+        this.getVideo(videoId).then((video) => {
+          const { status } = video.transcode;
+          switch (status) {
+            case "complete":
+              resolve();
+              break;
+            case "error":
+              reject("Transcoding failed");
+              break;
+            case "in_progress":
+              setTimeout(checkStatus, 1000);
+              break;
+          }
+        }, reject);
+      };
+
+      checkStatus();
+    });
+  }
 }

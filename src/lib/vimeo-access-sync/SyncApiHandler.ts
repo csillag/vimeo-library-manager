@@ -31,6 +31,7 @@ export class SyncApiHandler implements SyncApi {
     data: VideoUpdateData,
     onProgress: UploadProgressCallback
   ) => string;
+  readonly waitForEncoding: (videoId: string) => void;
 
   _uploadVideoPromise(
     videoFileName: string,
@@ -78,5 +79,10 @@ export class SyncApiHandler implements SyncApi {
       this._vimeoAsync
     );
     this.uploadVideo = wrapPromiseAsync3(this._uploadVideoPromise, this);
+
+    this.waitForEncoding = wrapPromiseAsync1(
+      this._vimeoAsync.waitForEncoding,
+      this._vimeoAsync
+    );
   }
 }

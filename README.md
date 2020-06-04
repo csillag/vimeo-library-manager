@@ -44,8 +44,34 @@ Commands:
   logout                                                  Log out from vimeo
   list-videos                                             List my videos
   update-data [options] <video-id>                        Update video meta-data
+  upload-video [options] <video-file>                     Upload a new video
   help [command]                                          display help for command
 ```
+
+### Uploading a video
+
+You can upload a video, set metadata, and optionally display the result in a browser.
+
+```
+Usage: vimeo-library-manager upload-video [options] <video-file>
+
+Upload a new video
+
+Options:
+  --set-title <title>                        Set title
+  --set-description <description>            Set description
+  --set-description-file <description-file>  Load description from a file
+  --set-custom <JSON-data>                   Set custom JSON data
+  --set-custom-file <JSON-data-file>         Set custom JSON data from a file
+  --set-privacy <policy>                     Set privacy policy
+  --set-password <password>                  Set the password
+  --write-id-to <id-file>                    Write the ID of the new video to a file
+  --wait-for-encoding                        Wait until then video encoding finishes
+  --open                                     Open in browser when ready
+  -h, --help                                 display help for command
+
+```
+
 
 ### Editing the meda-data of a video
 

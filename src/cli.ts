@@ -170,7 +170,7 @@ export function configureCLI() {
       "--write-id-to <id-file>",
       "Write the ID of the new video to a file"
     )
-    .option("--wait-for-transcoding", "Wait until transcoding finishes")
+    .option("--wait-for-encoding", "Wait until then video encoding finishes")
     .option("--open", "Open in browser when ready")
     .description("Upload a new video")
     .action(uploadVideo);

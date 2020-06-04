@@ -156,6 +156,28 @@ var ApiHandler = /** @class */ (function () {
     ApiHandler.prototype.uploadVideo = function (videoFileName, data, onSuccess, onProgress, onFail) {
         this._client.upload(videoFileName, data, onSuccess, onProgress, onFail);
     };
+    ApiHandler.prototype.waitForEncoding = function (videoId) {
+        var _this = this;
+        return new Promise(function (resolve, reject) {
+            var checkStatus = function () {
+                _this.getVideo(videoId).then(function (video) {
+                    var status = video.transcode.status;
+                    switch (status) {
+                        case "complete":
+                            resolve();
+                            break;
+                        case "error":
+                            reject("Transcoding failed");
+                            break;
+                        case "in_progress":
+                            setTimeout(checkStatus, 1000);
+                            break;
+                    }
+                }, reject);
+            };
+            checkStatus();
+        });
+    };
     return ApiHandler;
 }());
 exports.ApiHandler = ApiHandler;
