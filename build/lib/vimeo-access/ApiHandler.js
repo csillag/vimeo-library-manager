@@ -38,11 +38,11 @@ var ApiHandler = /** @class */ (function () {
             console.log.apply(console, stuff);
         }
     };
-    ApiHandler.prototype.getLoginUrl = function () {
+    ApiHandler.prototype.getLoginUrl = function (stateToken) {
         if (!this._auth.redirectUrl) {
             throw new Error("Redirect URL is not configured!");
         }
-        return this._client.buildAuthorizationEndpoint(this._auth.redirectUrl, wantedScopes.join(" "), "login");
+        return this._client.buildAuthorizationEndpoint(this._auth.redirectUrl, wantedScopes.join(" "), stateToken);
     };
     ApiHandler.prototype.finishLogin = function (code) {
         var _this = this;

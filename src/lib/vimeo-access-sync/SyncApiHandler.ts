@@ -18,7 +18,7 @@ import {
 export class SyncApiHandler implements SyncApi {
   private readonly _vimeoAsync: Api;
 
-  readonly getLoginUrl: () => string;
+  readonly getLoginUrl: (stateToken: string) => string;
   readonly finishLogin: (loginToken: string) => LoginInfo;
   readonly tutorial: () => string;
   readonly listMyVideos: () => VideoData[];
@@ -28,7 +28,8 @@ export class SyncApiHandler implements SyncApi {
   constructor(auth: AuthInfo, params?: ClientParams) {
     this._vimeoAsync = new ApiHandler(auth, params);
 
-    this.getLoginUrl = () => this._vimeoAsync.getLoginUrl();
+    this.getLoginUrl = (stateToken: string) =>
+      this._vimeoAsync.getLoginUrl(stateToken);
     this.finishLogin = wrapPromiseAsync1(
       this._vimeoAsync.finishLogin,
       this._vimeoAsync

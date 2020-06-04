@@ -7,7 +7,7 @@ var common_1 = require("./common");
 var auth_1 = require("./auth");
 var videos_1 = require("./videos");
 function configureCLI() {
-    common_1.program.version("0.0.3");
+    common_1.program.version("0.0.4");
     common_1.program
         .option("-c, --config <config-file>", "path to config file", process.env.HOME + "/.vimeo-library-manager/config.json")
         .option("-d, --debug", "output extra debugging");
@@ -20,11 +20,11 @@ function configureCLI() {
         .description("Initiate your Vimeo access")
         .action(auth_1.initAccess);
     common_1.program
-        .command("start-login")
+        .command("login")
         .description("Start the login process")
         .action(auth_1.startLogin);
     common_1.program
-        .command("finish-login <code>")
+        .command("finish-login <code>", { hidden: true })
         .description("Finish the login process")
         .action(auth_1.finishLogin);
     common_1.program.command("logout").description("Log out from vimeo").action(auth_1.logout);

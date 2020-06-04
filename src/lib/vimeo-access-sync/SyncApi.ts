@@ -3,10 +3,8 @@ import { LoginInfo, VideoData, VideoUpdateData } from "../vimeo-access";
 export interface SyncApi {
   /**
    * Get a login URL
-   *
-   * @param redirectUrl configured for the app
    */
-  getLoginUrl(): string;
+  getLoginUrl(stateToken: string): string;
 
   /**
    * Submit login token, and get an access token

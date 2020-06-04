@@ -43,14 +43,14 @@ export class ApiHandler implements Api {
     this._client = new Vimeo(clientId, clientSecret, accessToken);
   }
 
-  getLoginUrl(): string {
+  getLoginUrl(stateToken: string): string {
     if (!this._auth.redirectUrl) {
       throw new Error("Redirect URL is not configured!");
     }
     return (this._client.buildAuthorizationEndpoint(
       this._auth.redirectUrl,
       wantedScopes.join(" "),
-      "login"
+      stateToken
     ) as unknown) as string;
   }
 

@@ -7,7 +7,9 @@ var SyncApiHandler = /** @class */ (function () {
     function SyncApiHandler(auth, params) {
         var _this = this;
         this._vimeoAsync = new vimeo_access_1.ApiHandler(auth, params);
-        this.getLoginUrl = function () { return _this._vimeoAsync.getLoginUrl(); };
+        this.getLoginUrl = function (stateToken) {
+            return _this._vimeoAsync.getLoginUrl(stateToken);
+        };
         this.finishLogin = fiber_async_function_wrappers_1.wrapPromiseAsync1(this._vimeoAsync.finishLogin, this._vimeoAsync);
         this.tutorial = fiber_async_function_wrappers_1.wrapPromiseAsync0(this._vimeoAsync.tutorial, this._vimeoAsync);
         this.listMyVideos = fiber_async_function_wrappers_1.wrapPromiseAsync0(this._vimeoAsync.listMyVideos, this._vimeoAsync);

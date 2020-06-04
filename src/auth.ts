@@ -1,6 +1,10 @@
 /**
  * Test VIMEO API access
  */
+import { launchServer } from "./login-callback";
+const shortid = require("shortid");
+
+const open = require("open");
 import { APP_NAME, log } from "./common";
 import { getConfig, saveConfig, setConfig } from "./config";
 import { AccessScope, SyncApi, SyncApiHandler } from "./lib/vimeo-access-sync";
@@ -45,7 +49,7 @@ export function testAccess() {
     if (client) {
       console.log(
         "You have configured your client, but haven't logged in yet.",
-        "Continue with '" + APP_NAME + " start-login'!"
+        "Continue with '" + APP_NAME + " login'!"
       );
       console.log();
     }
@@ -67,7 +71,7 @@ export function initAccess(
 
   if (saveConfig()) {
     console.log();
-    console.log("OK, now you can execute the start-login command!");
+    console.log("OK, now you can execute the 'login' command!");
     console.log();
   }
 }
@@ -124,9 +128,7 @@ export function getNormalClient(): SyncApi | undefined {
   }
   if (!accessToken) {
     console.error("Access token is missing from the configuration.");
-    console.error(
-      "You need to log in to Vimeo. (See the 'start-login' command.)"
-    );
+    console.error("You need to log in to Vimeo. (See the 'login' command.)");
   }
   log("Config is", config);
   return new SyncApiHandler({
@@ -142,15 +144,22 @@ export function startLogin() {
   if (!vimeo) {
     return;
   }
-  const url = vimeo.getLoginUrl();
-  console.log("Open this URL to log in:", url);
-  console.log();
-  console.log(
-    "After granting permission, you will be redirected to a non-existent page.",
-    "Copy the code from the URL, and run '" +
-      APP_NAME +
-      " finish-login <code>' !"
+  const stateToken = shortid.generate();
+  const url = vimeo.getLoginUrl(stateToken);
+  open(url).then(
+    () => {},
+    (_r: any) => {
+      console.log("Open this URL to log in:", url);
+      console.log();
+      console.log(
+        "After granting permission, you will be redirected to a non-existent page.",
+        "Copy the code from the URL, and run '" +
+          APP_NAME +
+          " finish-login <code>' !"
+      );
+    }
   );
+  launchServer(stateToken);
 }
 
 export function finishLogin(code: string) {

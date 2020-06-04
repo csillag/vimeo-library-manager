@@ -4,6 +4,9 @@ exports.logout = exports.hasScope = exports.finishLogin = exports.startLogin = e
 /**
  * Test VIMEO API access
  */
+var login_callback_1 = require("./login-callback");
+var shortid = require("shortid");
+var open = require("open");
 var common_1 = require("./common");
 var config_1 = require("./config");
 var vimeo_access_sync_1 = require("./lib/vimeo-access-sync");
@@ -40,7 +43,7 @@ function testAccess() {
         common_1.log("No access token found. Let's see if we could log in...");
         var client = getLoginClient();
         if (client) {
-            console.log("You have configured your client, but haven't logged in yet.", "Continue with '" + common_1.APP_NAME + " start-login'!");
+            console.log("You have configured your client, but haven't logged in yet.", "Continue with '" + common_1.APP_NAME + " login'!");
             console.log();
         }
     }
@@ -55,7 +58,7 @@ function initAccess(clientId, clientSecret, redirectUrl) {
     });
     if (config_1.saveConfig()) {
         console.log();
-        console.log("OK, now you can execute the start-login command!");
+        console.log("OK, now you can execute the 'login' command!");
         console.log();
     }
 }
@@ -101,7 +104,7 @@ function getNormalClient() {
     }
     if (!accessToken) {
         console.error("Access token is missing from the configuration.");
-        console.error("You need to log in to Vimeo. (See the 'start-login' command.)");
+        console.error("You need to log in to Vimeo. (See the 'login' command.)");
     }
     common_1.log("Config is", config);
     return new vimeo_access_sync_1.SyncApiHandler({
@@ -117,12 +120,16 @@ function startLogin() {
     if (!vimeo) {
         return;
     }
-    var url = vimeo.getLoginUrl();
-    console.log("Open this URL to log in:", url);
-    console.log();
-    console.log("After granting permission, you will be redirected to a non-existent page.", "Copy the code from the URL, and run '" +
-        common_1.APP_NAME +
-        " finish-login <code>' !");
+    var stateToken = shortid.generate();
+    var url = vimeo.getLoginUrl(stateToken);
+    open(url).then(function () { }, function (_r) {
+        console.log("Open this URL to log in:", url);
+        console.log();
+        console.log("After granting permission, you will be redirected to a non-existent page.", "Copy the code from the URL, and run '" +
+            common_1.APP_NAME +
+            " finish-login <code>' !");
+    });
+    login_callback_1.launchServer(stateToken);
 }
 exports.startLogin = startLogin;
 function finishLogin(code) {

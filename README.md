@@ -40,8 +40,7 @@ Options:
 Commands:
   test                                                    Test your Vimeo access
   init <client-id> <client-secret> <client-redirect-url>  Initiate your Vimeo access
-  start-login                                             Start the login process
-  finish-login <code>                                     Finish the login process
+  login                                                   Start the login process
   logout                                                  Log out from vimeo
   list-videos                                             List my videos
   update-data [options] <video-id>                        Update video data

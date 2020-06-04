@@ -7,7 +7,7 @@ export interface Api {
    *
    * @param redirectUrl configured for the app
    */
-  getLoginUrl(): string;
+  getLoginUrl(stateToken: string): string;
 
   /**
    * Submit login token, and get an access token

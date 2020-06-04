@@ -13,7 +13,7 @@ import {
 import { updateVideoData, listVideos } from "./videos";
 
 function configureCLI() {
-  program.version("0.0.3");
+  program.version("0.0.4");
   program
     .option(
       "-c, --config <config-file>",
@@ -33,12 +33,12 @@ function configureCLI() {
     .action(initAccess);
 
   program
-    .command("start-login")
+    .command("login")
     .description("Start the login process")
     .action(startLogin);
 
   program
-    .command("finish-login <code>")
+    .command("finish-login <code>", { hidden: true })
     .description("Finish the login process")
     .action(finishLogin);
 
