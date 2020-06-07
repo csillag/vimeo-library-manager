@@ -31,21 +31,21 @@ Not a lot ATM, since I just started writing this tool.
 Usage: vimeo-library-manager [options] [command]
 
 Options:
-  -V, --version                                           output the version number
-  -c, --config <config-file>                              path to config file (default:
-                                                          "/home/csillag/.vimeo-library-manager/config.json")
-  -d, --debug                                             output extra debugging
-  -h, --help                                              display help for command
+  -V, --version                                     output the version number
+  -c, --config <config-file>                        path to config file
+  -d, --debug                                       output extra debugging
+  -h, --help                                        display help for command
 
 Commands:
-  test                                                    Test your Vimeo access
-  init <client-id> <client-secret> <client-redirect-url>  Initiate your Vimeo access
-  login                                                   Start the login process
-  logout                                                  Log out from vimeo
-  list-videos                                             List my videos
-  update-data [options] <video-id>                        Update video meta-data
-  upload-video [options] <video-file>                     Upload a new video
-  help [command]                                          display help for command
+  test                                              Test your Vimeo access
+  setup <client-id> <client-secret> <redirect-url>  Set up your Vimeo access
+  login [options]                                   Start the login process
+  logout                                            Log out from vimeo
+  list-videos                                       List my videos
+  update-data [options] <video-id>                  Update video meta-data
+  upload-video [options] <video-file>               Upload a new video
+  delete-video <video-id>                           Delete a video
+  help [command]                                    display help for command
 ```
 
 ### Uploading a video
@@ -94,7 +94,6 @@ Options:
   --set-privacy <policy>                     Set privacy policy
   --set-password <password>                  Set the password
   -h, --help                                 display help for command
-
 ```
 
 So, for example, to change the title and description of a video:
@@ -108,4 +107,8 @@ To make it password protected:
 ```
 vimeo-library-manager update-data 425342398 --set-password "magic"
 ```
+
+### Updating the content of a video
+
+This is coming next.
 

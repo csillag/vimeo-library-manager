@@ -1,9 +1,9 @@
 {
   "name": "vimeo-library-manager",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "A manager for your Vimeo libraries",
   "author": "Kristof Csillag <csillag.kristof@gmail.com>",
-  "main": "index.js",
+  "main": "build/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -30,6 +30,6 @@
     "vimeo": "2.1.1"
   },
   "bin": {
-    "vimeo-library-manager": "build/main.js"
+    "vimeo-library-manager": "build/cli.js"
   }
 }

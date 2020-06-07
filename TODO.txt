@@ -41,6 +41,8 @@ x Unite code with the VES library
   + Open in browser
 
 + proper pagination for list
++ Better library / CLI separation
++ Better exception handling patterns
 + delete videos
 - video replacement
   - CLI

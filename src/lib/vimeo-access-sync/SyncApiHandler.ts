@@ -24,7 +24,7 @@ export class SyncApiHandler implements SyncApi {
   readonly finishLogin: (loginToken: string) => LoginInfo;
   readonly tutorial: () => string;
   readonly listMyVideos: () => VideoData[];
-  readonly editVideo: (videoId: string, data: VideoUpdateData) => string;
+  readonly editVideo: (videoId: string, data: VideoUpdateData) => void;
   readonly getVideo: (videoId: string) => VideoData;
   readonly uploadVideo: (
     videoFileName: string,
@@ -48,7 +48,7 @@ export class SyncApiHandler implements SyncApi {
         },
         onProgress,
         (error: string) => {
-          reject(error);
+          reject(new Error(error));
         }
       );
     });

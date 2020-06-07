@@ -25,17 +25,25 @@ const wantedScopes: AccessScope[] = [
 function parseError(err: any): string {
   try {
     const data = JSON.parse(err.message);
-    const { error, developer_message, invalid_parameters } = data;
-    return (
+    // console.log("Error data is", JSON.stringify(data, null, "  "));
+    const { error, developer_message, invalid_parameters, error_code } = data;
+    const result =
       error +
       (!developer_message ? "" : " " + developer_message) +
       (!invalid_parameters
         ? ""
-        : JSON.stringify(invalid_parameters, null, "  "))
-    );
+        : JSON.stringify(invalid_parameters, null, "  ")) +
+      (error_code === undefined ? "" : " Error code: " + error_code);
+    // console.log("Result is", result);
+    return result;
   } catch (error) {
+    // console.log("Failed to parse", error);
     return err.message;
   }
+}
+
+function convertError(err: any): Error {
+  return new Error(parseError(err));
 }
 
 export class ApiHandler implements Api {
@@ -103,7 +111,7 @@ export class ApiHandler implements Api {
         },
         (err: any, body, _statusCode, _headers) => {
           if (err) {
-            reject(parseError(err));
+            reject(convertError(err));
           } else {
             resolve(body.message);
           }
@@ -121,7 +129,7 @@ export class ApiHandler implements Api {
         },
         (error: any, body, _statusCode, _headers) => {
           if (error) {
-            reject(parseError(error));
+            reject(convertError(error));
           } else {
             const { total, page: currentPage, per_page, data } = body;
             if (currentPage !== wantedPage) {
@@ -151,7 +159,7 @@ export class ApiHandler implements Api {
         },
         (error: any, body, _statusCode, _headers) => {
           if (error) {
-            reject(parseError(error));
+            reject(convertError(error));
           } else {
             resolve(body);
           }
@@ -160,8 +168,8 @@ export class ApiHandler implements Api {
     });
   }
 
-  editVideo(videoId: string, data: VideoUpdateData): Promise<string> {
-    return new Promise<string>((resolve, reject) => {
+  editVideo(videoId: string, data: VideoUpdateData): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
       const path = "/videos/" + videoId;
       this._client.request(
         {
@@ -172,12 +180,12 @@ export class ApiHandler implements Api {
         },
         (error: any, _body, statusCode, _headers) => {
           if (error) {
-            reject(parseError(error));
+            reject(convertError(error));
           } else {
             // console.log(_body);
             switch (statusCode) {
               case 200:
-                resolve("The video was edited.");
+                resolve();
                 break;
               case 400:
                 reject("A parameter is invalid.");
@@ -230,7 +238,7 @@ export class ApiHandler implements Api {
         { method: "DELETE", path: "/videos/" + videoIs },
         (error: any, _body, statusCode, _headers) => {
           if (error) {
-            reject(parseError(error));
+            reject(convertError(error));
             return;
           } else {
             switch (statusCode) {

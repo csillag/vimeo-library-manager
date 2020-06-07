@@ -21,16 +21,24 @@ var wantedScopes = [
 function parseError(err) {
     try {
         var data = JSON.parse(err.message);
-        var error = data.error, developer_message = data.developer_message, invalid_parameters = data.invalid_parameters;
-        return (error +
+        // console.log("Error data is", JSON.stringify(data, null, "  "));
+        var error = data.error, developer_message = data.developer_message, invalid_parameters = data.invalid_parameters, error_code = data.error_code;
+        var result = error +
             (!developer_message ? "" : " " + developer_message) +
             (!invalid_parameters
                 ? ""
-                : JSON.stringify(invalid_parameters, null, "  ")));
+                : JSON.stringify(invalid_parameters, null, "  ")) +
+            (error_code === undefined ? "" : " Error code: " + error_code);
+        // console.log("Result is", result);
+        return result;
     }
     catch (error) {
+        // console.log("Failed to parse", error);
         return err.message;
     }
+}
+function convertError(err) {
+    return new Error(parseError(err));
 }
 var ApiHandler = /** @class */ (function () {
     function ApiHandler(_auth, _params) {
@@ -89,7 +97,7 @@ var ApiHandler = /** @class */ (function () {
                 path: "/tutorial",
             }, function (err, body, _statusCode, _headers) {
                 if (err) {
-                    reject(parseError(err));
+                    reject(convertError(err));
                 }
                 else {
                     resolve(body.message);
@@ -107,7 +115,7 @@ var ApiHandler = /** @class */ (function () {
                 path: "/me/videos?page=" + wantedPage,
             }, function (error, body, _statusCode, _headers) {
                 if (error) {
-                    reject(parseError(error));
+                    reject(convertError(error));
                 }
                 else {
                     var total = body.total, currentPage = body.page, per_page = body.per_page, data = body.data;
@@ -136,7 +144,7 @@ var ApiHandler = /** @class */ (function () {
                 path: "/videos/" + videoId,
             }, function (error, body, _statusCode, _headers) {
                 if (error) {
-                    reject(parseError(error));
+                    reject(convertError(error));
                 }
                 else {
                     resolve(body);
@@ -155,13 +163,13 @@ var ApiHandler = /** @class */ (function () {
                 headers: { "Content-Type": "application/json" },
             }, function (error, _body, statusCode, _headers) {
                 if (error) {
-                    reject(parseError(error));
+                    reject(convertError(error));
                 }
                 else {
                     // console.log(_body);
                     switch (statusCode) {
                         case 200:
-                            resolve("The video was edited.");
+                            resolve();
                             break;
                         case 400:
                             reject("A parameter is invalid.");
@@ -203,7 +211,7 @@ var ApiHandler = /** @class */ (function () {
         return new Promise(function (resolve, reject) {
             _this._client.request({ method: "DELETE", path: "/videos/" + videoIs }, function (error, _body, statusCode, _headers) {
                 if (error) {
-                    reject(parseError(error));
+                    reject(convertError(error));
                     return;
                 }
                 else {

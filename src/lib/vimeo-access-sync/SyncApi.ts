@@ -36,7 +36,7 @@ export interface SyncApi {
   /**
    * This method edits the specified video.
    */
-  editVideo(videoId: string, data: VideoUpdateData): string;
+  editVideo(videoId: string, data: VideoUpdateData): void;
 
   /**
    * Upload a new video

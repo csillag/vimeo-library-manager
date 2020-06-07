@@ -40,7 +40,7 @@ export interface Api {
   /**
    * This method edits the specified video.
    */
-  editVideo(videoId: string, data: VideoUpdateData): Promise<string>;
+  editVideo(videoId: string, data: VideoUpdateData): Promise<void>;
 
   /**
    * Upload a new video

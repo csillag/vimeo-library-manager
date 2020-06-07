@@ -25,7 +25,7 @@ var SyncApiHandler = /** @class */ (function () {
             _this._vimeoAsync.uploadVideo(videoFileName, data, function (url) {
                 resolve(url);
             }, onProgress, function (error) {
-                reject(error);
+                reject(new Error(error));
             });
         });
     };
