@@ -61,7 +61,7 @@ function parseUpdateEditOptions(options) {
         }
         try {
             var custom = JSON.parse(customString);
-            Object.assign(data, custom);
+            _1.mergeInto(data, custom);
         }
         catch (error) {
             throw new Error("The custom data you specified in '" +
@@ -72,7 +72,7 @@ function parseUpdateEditOptions(options) {
     if (setCustom !== undefined) {
         try {
             var custom = JSON.parse(setCustom);
-            Object.assign(data, custom);
+            _1.mergeInto(data, custom);
         }
         catch (error) {
             throw new Error("The custom data you specified is not valid JSON!");
@@ -100,10 +100,10 @@ function parseUpdateEditOptions(options) {
         data.description = setDescription;
     }
     if (setPrivacy !== undefined) {
-        Object.assign(data, { privacy: { view: setPrivacy } });
+        _1.mergeInto(data, { privacy: { view: setPrivacy } });
     }
     if (setPassword !== undefined) {
-        Object.assign(data, {
+        _1.mergeInto(data, {
             password: setPassword,
             privacy: { view: "password" },
         });
@@ -124,7 +124,7 @@ function describeVideo(video) {
 }
 function cli() {
     var program = new commander_1.Command(APP_NAME);
-    program.version("0.0.9");
+    program.version("0.0.10");
     program
         .option("-c, --config <config-file>", "path to config file"
     // process.env.HOME + "/.vimeo-library-manager/config.json"

@@ -30,6 +30,7 @@ import { AccessScope, VideoData } from "../vimeo-access";
 import {
   getHashSync,
   getKeys,
+  mergeInto,
   parseQuery,
   reduceChanges,
   sleep,
@@ -296,7 +297,7 @@ export class ApiHandler implements Api {
     console.log("Logged in as", userUri, userName, "!");
 
     delete this._session.stateToken;
-    Object.assign(this._session, {
+    mergeInto(this._session, {
       accessToken,
       userUri,
       scopes,
@@ -414,7 +415,7 @@ export class ApiHandler implements Api {
     let hash: string;
     slow("calculating hash", () => {
       hash = getHashSync(videoFileName);
-      Object.assign(data, { embed: { logos: { custom: { link: hash } } } });
+      mergeInto(data, { embed: { logos: { custom: { link: hash } } } });
     });
 
     let uri: string;

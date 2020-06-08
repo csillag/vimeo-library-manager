@@ -1,9 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.sleep = exports.slow = exports.getKeys = exports.reduceChanges = exports.getHashSync = exports.parseQuery = void 0;
+exports.mergeInto = exports.sleep = exports.slow = exports.getKeys = exports.reduceChanges = exports.getHashSync = exports.parseQuery = void 0;
 var fs = require("fs");
 var crypto = require("crypto");
 var lodashGet = require("lodash.get");
+var lodashSet = require("lodash.set");
 var ora = require("ora");
 var Fiber = require("fibers");
 var fiber_async_function_wrappers_1 = require("../fiber-async-function-wrappers");
@@ -161,3 +162,14 @@ function sleep(ms) {
     Fiber.yield();
 }
 exports.sleep = sleep;
+/**
+ * This is like Object.assign(), except that it does a "deep merge"
+ */
+function mergeInto(target, source) {
+    var keys = getKeys(source);
+    keys.forEach(function (key) {
+        var value = lodashGet(source, key);
+        lodashSet(target, key, value);
+    });
+}
+exports.mergeInto = mergeInto;

@@ -224,7 +224,7 @@ var ApiHandler = /** @class */ (function () {
         var _a = info, userUri = _a.userUri, userName = _a.userName, scopes = _a.scopes, accessToken = _a.accessToken;
         console.log("Logged in as", userUri, userName, "!");
         delete this._session.stateToken;
-        Object.assign(this._session, {
+        util_1.mergeInto(this._session, {
             accessToken: accessToken,
             userUri: userUri,
             scopes: scopes,
@@ -303,7 +303,7 @@ var ApiHandler = /** @class */ (function () {
         var hash;
         util_1.slow("calculating hash", function () {
             hash = util_1.getHashSync(videoFileName);
-            Object.assign(data, { embed: { logos: { custom: { link: hash } } } });
+            util_1.mergeInto(data, { embed: { logos: { custom: { link: hash } } } });
         });
         var uri;
         util_1.slow("uploading video file", function (control) {

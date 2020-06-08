@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { createVimeoLibraryManager, VimeoLibraryManager } from ".";
+import { createVimeoLibraryManager, mergeInto, VimeoLibraryManager } from ".";
 
 const fs = require("fs");
 import Fiber = require("fibers");
@@ -80,7 +80,7 @@ function parseUpdateEditOptions(options: any): VideoUpdateData {
     }
     try {
       const custom = JSON.parse(customString);
-      Object.assign(data, custom);
+      mergeInto(data, custom);
     } catch (error) {
       throw new Error(
         "The custom data you specified in '" +
@@ -92,7 +92,7 @@ function parseUpdateEditOptions(options: any): VideoUpdateData {
   if (setCustom !== undefined) {
     try {
       const custom = JSON.parse(setCustom);
-      Object.assign(data, custom);
+      mergeInto(data, custom);
     } catch (error) {
       throw new Error("The custom data you specified is not valid JSON!");
     }
@@ -120,10 +120,10 @@ function parseUpdateEditOptions(options: any): VideoUpdateData {
     data.description = setDescription;
   }
   if (setPrivacy !== undefined) {
-    Object.assign(data, { privacy: { view: setPrivacy } });
+    mergeInto(data, { privacy: { view: setPrivacy } });
   }
   if (setPassword !== undefined) {
-    Object.assign(data, {
+    mergeInto(data, {
       password: setPassword,
       privacy: { view: "password" },
     });
@@ -148,7 +148,7 @@ function describeVideo(video: VideoData) {
 function cli() {
   const program = new Command(APP_NAME);
 
-  program.version("0.0.9");
+  program.version("0.0.10");
   program
     .option(
       "-c, --config <config-file>",

@@ -1,6 +1,7 @@
 import fs = require("fs");
 import crypto = require("crypto");
 const lodashGet = require("lodash.get");
+const lodashSet = require("lodash.set");
 const ora = require("ora");
 const Fiber = require("fibers");
 import { wrapPromiseAsync1 } from "../fiber-async-function-wrappers";
@@ -173,4 +174,15 @@ export function sleep(ms: number) {
     fiber.run();
   }, ms);
   Fiber.yield();
+}
+
+/**
+ * This is like Object.assign(), except that it does a "deep merge"
+ */
+export function mergeInto(target: Object, source: Object) {
+  const keys = getKeys(source);
+  keys.forEach((key) => {
+    const value = lodashGet(source, key);
+    lodashSet(target, key, value);
+  });
 }
