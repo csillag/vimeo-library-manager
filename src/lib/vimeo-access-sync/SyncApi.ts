@@ -4,6 +4,7 @@ import {
   VideoData,
   VideoUpdateData,
 } from "../vimeo-access";
+import { Picture } from "../vimeo-access/MoreTypes";
 
 export interface SyncApi {
   /**
@@ -48,12 +49,41 @@ export interface SyncApi {
   ): string;
 
   /**
+   * Wait for video encoding to start
+   */
+  waitForEncodingToStart(videoId: string): void;
+
+  /**
    * Wait for video encoding to finish
    */
-  waitForEncoding(videoId: string): void;
+  waitForEncodingToFinish(videoId: string): void;
 
   /**
    * Delete a video
    */
-  deleteVideo(videoIs: string): string;
+  deleteVideo(videoIs: string): void;
+
+  /**
+   * Replace the content of a video
+   */
+  replaceVideo(
+    videoId: string,
+    videoFileName: string,
+    onProgress: UploadProgressCallback
+  ): void;
+
+  /**
+   * Get all the thumbnails for a video
+   */
+  getAllThumbnails(videoId: string): Picture[];
+
+  /**
+   * Delete a thumbnail
+   */
+  deleteThumbnail(videoId: string, pictureId: string): void;
+
+  /**
+   * Create a new thumbnail for a video
+   */
+  createThumbnail(videoId: string, time: number, active?: boolean): Picture;
 }

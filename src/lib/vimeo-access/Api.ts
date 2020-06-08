@@ -5,7 +5,7 @@ import {
   UploadSuccessCallback,
   VideoUpdateData,
 } from "./Types";
-import { VideoData } from "./MoreTypes";
+import { Picture, VideoData } from "./MoreTypes";
 
 export interface Api {
   /**
@@ -54,12 +54,47 @@ export interface Api {
   ): void;
 
   /**
+   * Wait for encoding to start on a video
+   */
+  waitForEncodingToStart(videoId: string): Promise<void>;
+
+  /**
    * Wait for encoding to finish on a video
    */
-  waitForEncoding(videoId: string): Promise<void>;
+  waitForEncodingToFinish(videoId: string): Promise<void>;
 
   /**
    * Delete a video
    */
-  deleteVideo(videoIs: string): Promise<string>;
+  deleteVideo(videoIs: string): Promise<void>;
+
+  /**
+   * Replace the content of a video
+   */
+  replaceVideo(
+    videoId: string,
+    videoFileName: string,
+    onSuccess: UploadSuccessCallback,
+    onProgress: UploadProgressCallback,
+    onFail: UploadFailCallback
+  ): void;
+
+  /**
+   * Get all the thumbnails for a video
+   */
+  getAllThumbnails(videoId: string): Promise<Picture[]>;
+
+  /**
+   * Delete a thumbnail
+   */
+  deleteThumbnail(videoId: string, pictureId: string): Promise<void>;
+
+  /**
+   * Create a new thumbnail for a video
+   */
+  createThumbnail(
+    videoId: string,
+    time: number,
+    active?: boolean
+  ): Promise<Picture>;
 }

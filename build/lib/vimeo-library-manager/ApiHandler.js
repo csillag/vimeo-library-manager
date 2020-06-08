@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ApiHandler = void 0;
+exports.ApiHandler = exports.selectLargestPicture = exports.pictureUriToId = exports.videoUriToId = void 0;
+var lodashGet = require("lodash.get");
 var fs = require("fs");
 var path = require("path");
 var shortId = require("shortid");
@@ -11,6 +12,16 @@ var URI = require("uri-js");
 var Fiber = require("fibers");
 var vimeo_access_sync_1 = require("../vimeo-access-sync");
 var util_1 = require("./util");
+exports.videoUriToId = function (uri) { return uri.substr(8); };
+exports.pictureUriToId = function (uri) {
+    return uri.substr(uri.lastIndexOf("/") + 1);
+};
+function selectLargestPicture(picture) {
+    return picture.sizes.reduce(function (last, current) {
+        return current.width > last.width ? current : last;
+    }, picture.sizes[0]);
+}
+exports.selectLargestPicture = selectLargestPicture;
 var ApiHandler = /** @class */ (function () {
     function ApiHandler(_managerConfig) {
         this._managerConfig = _managerConfig;
@@ -301,7 +312,7 @@ var ApiHandler = /** @class */ (function () {
                 control.setText("Uploaded " + Math.round((100 * uploaded) / total) + "%");
             });
         });
-        var videoId = uri.substr(8);
+        var videoId = exports.videoUriToId(uri);
         if (idFileName !== undefined) {
             try {
                 fs.writeFileSync(idFileName, videoId);
@@ -312,7 +323,7 @@ var ApiHandler = /** @class */ (function () {
         }
         if (waitForEncoding) {
             util_1.slow("waiting for encoding", function () {
-                _this._vimeo.waitForEncoding(videoId);
+                _this._vimeo.waitForEncodingToFinish(videoId);
             });
         }
         var video;
@@ -329,6 +340,118 @@ var ApiHandler = /** @class */ (function () {
         var _this = this;
         console.log("Going to delete video", videoId, "\n");
         util_1.slow("deleting video", function () { return _this._vimeo.deleteVideo(videoId); });
+    };
+    ApiHandler.prototype.replaceVideoContent = function (videoId, videoFileName, config) {
+        var _this = this;
+        console.log("Replacing video content for", videoId, "with", videoFileName, "...", "\n");
+        var waitForEncoding = config.waitForEncoding, openInBrowser = config.openInBrowser, keepThumbnail = config.keepThumbnail, thumbnailTime = config.thumbnailTime, ignoreHash = config.ignoreHash;
+        var video = this.getVideo(videoId);
+        var oldHash = lodashGet(video, "embed.logos.custom.link");
+        var newHash;
+        util_1.slow("calculating hash", function () {
+            newHash = "http://" + util_1.getHashSync(videoFileName);
+        });
+        if (newHash === oldHash) {
+            if (ignoreHash) {
+                console.log("The video content seems to be the same, but replacing anyway, as requested.", "\n");
+            }
+            else {
+                throw new Error("The video content is the same!");
+            }
+        }
+        util_1.slow("updating meta-data", function () {
+            _this._vimeo.editVideo(videoId, {
+                embed: { logos: { custom: { link: newHash } } },
+            });
+        });
+        util_1.slow("uploading video file", function (control) {
+            _this._vimeo.replaceVideo(videoId, videoFileName, function (uploaded, total) {
+                control.setText("Uploaded " + Math.round((100 * uploaded) / total) + "%");
+            });
+        });
+        if (waitForEncoding || !keepThumbnail) {
+            util_1.slow("waiting for encoding", function (control) {
+                control.setText("waiting for encoding to start...");
+                _this._vimeo.waitForEncodingToStart(videoId);
+                control.setText("waiting for encoding to finish...");
+                _this._vimeo.waitForEncodingToFinish(videoId);
+            });
+        }
+        if (!keepThumbnail) {
+            util_1.slow("waiting for the video to be ready for thumbnail generation", function () {
+                util_1.sleep(10 * 1000); // TODO: what out what is a safe value here
+            });
+            this.recreateThumbnail(videoId, { time: thumbnailTime });
+        }
+        util_1.slow("checking end result", function () {
+            video = _this._vimeo.getVideo(videoId);
+        });
+        if (openInBrowser) {
+            console.log("Opening in browser:", video.link, "\n");
+            open(video.link).then();
+        }
+        return video;
+    };
+    ApiHandler.prototype.openVideo = function (videoId) {
+        var video = this._vimeo.getVideo(videoId);
+        console.log("Opening in browser:", video.link, "\n");
+        open(video.link).then();
+    };
+    ApiHandler.prototype.getAllThumbnails = function (videoId) {
+        var _this = this;
+        var result;
+        util_1.slow("getting data about thumbnails", function () {
+            result = _this._vimeo.getAllThumbnails(videoId);
+        });
+        return result;
+    };
+    ApiHandler.prototype.deleteThumbnail = function (videoId, pictureId) {
+        var _this = this;
+        console.log("Going to delete thumbnail", pictureId, "for video", videoId, "\n");
+        util_1.slow("deleting thumbnail", function () {
+            return _this._vimeo.deleteThumbnail(videoId, pictureId);
+        });
+    };
+    ApiHandler.prototype.deleteThumbnails = function (videoId) {
+        var _this = this;
+        console.log("Going to delete thumbnails", "for video", videoId, "\n");
+        var thumbnails = this.getAllThumbnails(videoId);
+        thumbnails.forEach(function (thumbnail) {
+            var pictureId = exports.pictureUriToId(thumbnail.uri);
+            util_1.slow("deleting thumbnail " + pictureId, function () {
+                return _this._vimeo.deleteThumbnail(videoId, pictureId);
+            });
+        });
+    };
+    ApiHandler.prototype.createThumbnail = function (videoId, config) {
+        var _this = this;
+        if (config === void 0) { config = {}; }
+        var time = config.time, active = config.active, openInBrowser = config.openInBrowser;
+        var wantedTime = time;
+        if (wantedTime === undefined) {
+            var video = this.getVideo(videoId);
+            wantedTime = video.duration / 2;
+        }
+        var result;
+        util_1.slow("creating thumbnail", function () {
+            result = _this._vimeo.createThumbnail(videoId, wantedTime, active);
+        });
+        if (openInBrowser) {
+            var link = selectLargestPicture(result).link;
+            console.log("Opening in browser:", link, "\n");
+            open(link).then();
+        }
+        return result;
+    };
+    ApiHandler.prototype.recreateThumbnail = function (videoId, config) {
+        if (config === void 0) { config = {}; }
+        var time = config.time, openInBrowser = config.openInBrowser;
+        this.deleteThumbnails(videoId);
+        return this.createThumbnail(videoId, {
+            time: time,
+            active: true,
+            openInBrowser: openInBrowser,
+        });
     };
     return ApiHandler;
 }());

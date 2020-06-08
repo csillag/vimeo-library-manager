@@ -10,7 +10,7 @@ import {
   VideoUpdateData,
 } from "./Types";
 import { Vimeo } from "vimeo";
-import { VideoData } from "./MoreTypes";
+import { Picture, VideoData } from "./MoreTypes";
 
 const wantedScopes: AccessScope[] = [
   "public",
@@ -79,23 +79,19 @@ export class ApiHandler implements Api {
         this._auth.redirectUrl!,
         (error: any, response) => {
           if (error) {
-            const errorData = JSON.parse(error.message);
-            // console.error(
-            //   "Error while getting access token:",
-            //   JSON.stringify(errorData, null, "  ")
-            // );
-            reject(errorData.error_description);
-            return;
-          }
-          const { access_token: accessToken, user, scope } = response;
-
-          if (accessToken) {
-            resolve({
-              accessToken,
-              userUri: user.uri,
-              userName: user.name,
-              scopes: scope.split(" "),
-            });
+            reject(convertError(error));
+          } else {
+            const { access_token: accessToken, user, scope } = response;
+            if (accessToken) {
+              resolve({
+                accessToken,
+                userUri: user.uri,
+                userName: user.name,
+                scopes: scope.split(" "),
+              });
+            } else {
+              reject(new Error("No access token received!"));
+            }
           }
         }
       );
@@ -122,10 +118,11 @@ export class ApiHandler implements Api {
 
   listMyVideos(wantedPage = 1, loaded: VideoData[] = []): Promise<VideoData[]> {
     return new Promise<VideoData[]>((resolve, reject) => {
+      const path = "/me/videos?page=" + wantedPage;
       this._client.request(
         {
           method: "GET",
-          path: "/me/videos?page=" + wantedPage,
+          path,
         },
         (error: any, body, _statusCode, _headers) => {
           if (error) {
@@ -133,11 +130,11 @@ export class ApiHandler implements Api {
           } else {
             const { total, page: currentPage, per_page, data } = body;
             if (currentPage !== wantedPage) {
-              reject("I don't understand what is going on here.");
+              reject(new Error("I don't understand what is going on here."));
               return;
             }
             const totalPages = Math.ceil(total / per_page);
-            const isLast = totalPages === currentPage;
+            const isLast = totalPages <= currentPage;
             const upToNow = [...loaded, ...data]; // Unite the already loaded and the new data
             if (isLast) {
               resolve(upToNow);
@@ -188,10 +185,10 @@ export class ApiHandler implements Api {
                 resolve();
                 break;
               case 400:
-                reject("A parameter is invalid.");
+                reject(new Error("A parameter is invalid."));
                 break;
               case 402:
-                reject("You are not allowed to do this!");
+                reject(new Error("You are not allowed to do this!"));
             }
           }
         }
@@ -209,7 +206,30 @@ export class ApiHandler implements Api {
     this._client.upload(videoFileName, data, onSuccess, onProgress, onFail);
   }
 
-  waitForEncoding(videoId: string): Promise<void> {
+  waitForEncodingToStart(videoId: string): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+      const checkStatus = () => {
+        this.getVideo(videoId).then((video) => {
+          const { status } = video.transcode;
+          switch (status) {
+            case "complete":
+              setTimeout(checkStatus, 1000);
+              break;
+            case "error":
+              reject(new Error("Transcoding failed"));
+              break;
+            case "in_progress":
+              resolve();
+              break;
+          }
+        }, reject);
+      };
+
+      checkStatus();
+    });
+  }
+
+  waitForEncodingToFinish(videoId: string): Promise<void> {
     return new Promise<void>((resolve, reject) => {
       const checkStatus = () => {
         this.getVideo(videoId).then((video) => {
@@ -219,7 +239,7 @@ export class ApiHandler implements Api {
               resolve();
               break;
             case "error":
-              reject("Transcoding failed");
+              reject(new Error("Transcoding failed"));
               break;
             case "in_progress":
               setTimeout(checkStatus, 1000);
@@ -232,22 +252,128 @@ export class ApiHandler implements Api {
     });
   }
 
-  deleteVideo(videoIs: string): Promise<string> {
-    return new Promise<string>((resolve, reject) => {
+  deleteVideo(videoId: string): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
       this._client.request(
-        { method: "DELETE", path: "/videos/" + videoIs },
-        (error: any, _body, statusCode, _headers) => {
+        { method: "DELETE", path: "/videos/" + videoId },
+        (error: any, body, statusCode, _headers) => {
           if (error) {
             reject(convertError(error));
             return;
           } else {
             switch (statusCode) {
               case 204:
-                resolve("The video was deleted.");
+                resolve();
                 break;
               case 403:
-                reject("The authenticated user can't delete this video.");
+                reject(
+                  new Error("The authenticated user can't delete this video.")
+                );
                 break;
+              default:
+                reject(new Error("Can't delete video: " + body));
+                break;
+            }
+          }
+        }
+      );
+    });
+  }
+
+  replaceVideo(
+    videoId: string,
+    videoFileName: string,
+    onSuccess: UploadSuccessCallback,
+    onProgress: UploadProgressCallback,
+    onFail: UploadFailCallback
+  ) {
+    this._client.replace(
+      videoFileName,
+      "/videos/" + videoId,
+      {},
+      onSuccess,
+      onProgress,
+      onFail
+    );
+  }
+
+  getAllThumbnails(videoId: string): Promise<Picture[]> {
+    return new Promise<Picture[]>((resolve, reject) => {
+      this._client.request(
+        {
+          method: "GET",
+          path: "/videos/" + videoId + "/pictures",
+        },
+        (error: any, body, _statusCode, _headers) => {
+          if (error) {
+            reject(convertError(error));
+          } else {
+            resolve(body.data);
+          }
+        }
+      );
+    });
+  }
+
+  deleteThumbnail(videoId: string, pictureId: string): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+      const path = "/videos/" + videoId + "/pictures/" + pictureId;
+      this._client.request(
+        {
+          method: "DELETE",
+          path,
+        },
+        (error: any, body, statusCode, _headers) => {
+          if (error) {
+            reject(convertError(error));
+            return;
+          } else {
+            switch (statusCode) {
+              case 204:
+                resolve();
+                break;
+              case 403:
+                reject(
+                  new Error(
+                    "The authenticated user can't delete this thumbnail."
+                  )
+                );
+                break;
+              default:
+                reject(new Error("Can't delete thumbnail: " + body));
+                break;
+            }
+          }
+        }
+      );
+    });
+  }
+
+  createThumbnail(
+    videoId: string,
+    time: number,
+    active?: boolean
+  ): Promise<Picture> {
+    return new Promise<Picture>((resolve, reject) => {
+      this._client.request(
+        {
+          method: "POST",
+          path: "/videos/" + videoId + "/pictures",
+          query: {
+            time,
+            active,
+          } as any,
+        },
+        (error: any, body, statusCode, _headers) => {
+          if (error) {
+            reject(convertError(error));
+          } else {
+            switch (statusCode) {
+              case 201:
+                resolve(body);
+                break;
+              default:
+                throw new Error("Couldn't create thumbnail: " + body);
             }
           }
         }

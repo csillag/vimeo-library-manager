@@ -44,14 +44,18 @@ x Unite code with the VES library
 + Better library / CLI separation
 + Better exception handling patterns
 + delete videos
-- video replacement
-  - CLI
-  - async API
-  - sync api
-  - App code
-  - check hash
++ video replacement
+  + CLI
+  + async API
+  + sync api
+  + App code
+  + check hash
+  + Fix thumbnail
+    + delete old
+    + create new
+    + timing
 
 
-
+- Bash completion
 
 - Real logout

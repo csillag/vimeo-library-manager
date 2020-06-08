@@ -1,4 +1,5 @@
 import { VideoData, VideoUpdateData } from "../vimeo-access";
+import { Picture } from "../vimeo-access/MoreTypes";
 
 export type LogLevel = "SILENT" | "ERROR" | "NORMAL" | "DEBUG";
 
@@ -66,6 +67,64 @@ export interface UploadConfig {
    * Should we write the resulting videoId to a file?
    */
   idFileName?: string;
+}
+
+/**
+ * Configuration for replace behavior
+ */
+export interface ReplaceConfig {
+  /**
+   * Don't compare the hash, just do the upload
+   *
+   * Normally we don't went to re-upload the same content, so we check
+   * the hash of the video file with the value saved to the metadata.
+   * Specify this flag do ignore the comparison and just force the upload.
+   */
+  ignoreHash?: boolean;
+
+  /**
+   * Should we wait until the encoding finishes?
+   */
+  waitForEncoding?: boolean;
+
+  /**
+   * Should we keep the old thumbnail?
+   *
+   * By default, we will recreate it, based on the new content.
+   * (Which also means that we will have to wait for the encoding to finish.)
+   */
+  keepThumbnail?: boolean;
+
+  /**
+   * If re-creating the thumbnail, from which point of the video should we take it?
+   */
+  thumbnailTime?: number;
+
+  /**
+   * Should we open the video in a browser?
+   */
+  openInBrowser?: boolean;
+}
+
+export interface ReCreateThumbnailConfig {
+  /**
+   * From which point of the video should we create the thumbnain?
+   *
+   * If not specified, we will just take it fro the middle.
+   */
+  time?: number;
+
+  /**
+   * Should we open the video in a browser?
+   */
+  openInBrowser?: boolean;
+}
+
+export interface CreateThumbnailConfig extends ReCreateThumbnailConfig {
+  /**
+   * Set this as the default thumbnail
+   */
+  active?: boolean;
 }
 
 export interface Api {
@@ -137,4 +196,43 @@ export interface Api {
    * Delete a video
    */
   deleteVideo(videoId: string): void;
+
+  /**
+   * Replace the content of a video
+   */
+  replaceVideoContent(
+    videoId: string,
+    videoFileName: string,
+    config: ReplaceConfig
+  ): VideoData;
+
+  /**
+   * Open a video in browser
+   */
+  openVideo(videoId: string): void;
+
+  /**
+   * Get all the thumbnails for a video
+   */
+  getAllThumbnails(videoId: string): Picture[];
+
+  /**
+   * Delete a thumbnail
+   */
+  deleteThumbnail(videoId: string, pictureId: string): void;
+
+  /**
+   * Delete all thumpnails for a video
+   */
+  deleteThumbnails(videoId: string): void;
+
+  /**
+   * Create a new thumbnail for a video
+   */
+  createThumbnail(videoId: string, config?: CreateThumbnailConfig): Picture;
+
+  /**
+   * Re-create the thumbnail for a video
+   */
+  recreateThumbnail(videoId: string, config?: ReCreateThumbnailConfig): Picture;
 }

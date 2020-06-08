@@ -16,13 +16,28 @@ var SyncApiHandler = /** @class */ (function () {
         this.editVideo = fiber_async_function_wrappers_1.wrapPromiseAsync2(this._vimeoAsync.editVideo, this._vimeoAsync);
         this.getVideo = fiber_async_function_wrappers_1.wrapPromiseAsync1(this._vimeoAsync.getVideo, this._vimeoAsync);
         this.uploadVideo = fiber_async_function_wrappers_1.wrapPromiseAsync3(this._uploadVideoPromise, this);
-        this.waitForEncoding = fiber_async_function_wrappers_1.wrapPromiseAsync1(this._vimeoAsync.waitForEncoding, this._vimeoAsync);
+        this.waitForEncodingToStart = fiber_async_function_wrappers_1.wrapPromiseAsync1(this._vimeoAsync.waitForEncodingToStart, this._vimeoAsync);
+        this.waitForEncodingToFinish = fiber_async_function_wrappers_1.wrapPromiseAsync1(this._vimeoAsync.waitForEncodingToFinish, this._vimeoAsync);
         this.deleteVideo = fiber_async_function_wrappers_1.wrapPromiseAsync1(this._vimeoAsync.deleteVideo, this._vimeoAsync);
+        this.replaceVideo = fiber_async_function_wrappers_1.wrapPromiseAsync3(this._replaceVideoPromise, this);
+        this.getAllThumbnails = fiber_async_function_wrappers_1.wrapPromiseAsync1(this._vimeoAsync.getAllThumbnails, this._vimeoAsync);
+        this.deleteThumbnail = fiber_async_function_wrappers_1.wrapPromiseAsync2(this._vimeoAsync.deleteThumbnail, this._vimeoAsync);
+        this.createThumbnail = fiber_async_function_wrappers_1.wrapPromiseAsync3m(this._vimeoAsync.createThumbnail, false, this._vimeoAsync);
     }
     SyncApiHandler.prototype._uploadVideoPromise = function (videoFileName, data, onProgress) {
         var _this = this;
         return new Promise(function (resolve, reject) {
             _this._vimeoAsync.uploadVideo(videoFileName, data, function (url) {
+                resolve(url);
+            }, onProgress, function (error) {
+                reject(new Error(error));
+            });
+        });
+    };
+    SyncApiHandler.prototype._replaceVideoPromise = function (videoId, videoFileName, onProgress) {
+        var _this = this;
+        return new Promise(function (resolve, reject) {
+            _this._vimeoAsync.replaceVideo(videoId, videoFileName, function (url) {
                 resolve(url);
             }, onProgress, function (error) {
                 reject(new Error(error));

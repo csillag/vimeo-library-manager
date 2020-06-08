@@ -1,25 +1,10 @@
 #!/usr/bin/env node
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.parseCommonOptions = void 0;
 var _1 = require(".");
 var fs = require("fs");
 var Fiber = require("fibers");
 var commander_1 = require("commander");
-// import {
-//   finishLogin,
-//   initAccess,
-//   logout,
-//   startLogin,
-//   testAccess,
-// } from "./auth";
-// import {
-//   deleteVideo,
-//   listVideos,
-//   updateVideoData,
-//   uploadVideo,
-// } from "./videos";
-// import { VideoUpdateData } from "./lib/vimeo-access";
 var APP_NAME = "vimeo-library-manager";
 /**
  * Run the commands with a configured Vimeo Library Manager instance, and exception handling
@@ -50,7 +35,7 @@ var wrapAction = function (action) { return function () {
 /**
  * Define common options for uploading / editing videos
  */
-function addCommonOptions(command) {
+function addUpdateEditOptions(command) {
     return command
         .option("--set-title <title>", "Set title")
         .option("--set-description <description>", "Set description")
@@ -63,7 +48,7 @@ function addCommonOptions(command) {
 /**
  * Parse common options for uploading / editing videos
  */
-function parseCommonOptions(options) {
+function parseUpdateEditOptions(options) {
     var setTitle = options.setTitle, setDescription = options.setDescription, setDescriptionFile = options.setDescriptionFile, setCustom = options.setCustom, setCustomFile = options.setCustomFile, setPrivacy = options.setPrivacy, setPassword = options.setPassword;
     var data = {};
     if (setCustomFile !== undefined) {
@@ -123,14 +108,21 @@ function parseCommonOptions(options) {
     }
     return data;
 }
-exports.parseCommonOptions = parseCommonOptions;
+/**
+ * Define common options for uploading / replacing videos
+ */
+function addUpdateReplaceOptions(command) {
+    return command
+        .option("--wait-for-encoding", "Wait until the video encoding finishes")
+        .option("--open", "Open in browser");
+}
 function describeVideo(video) {
     var privacy = video.privacy, link = video.link, name = video.name, duration = video.duration;
     console.log(link, "(", duration, ")", "\t\t", privacy.view, "\t", name);
 }
 function cli() {
     var program = new commander_1.Command(APP_NAME);
-    program.version("0.0.5");
+    program.version("0.0.6");
     program
         .option("-c, --config <config-file>", "path to config file"
     // process.env.HOME + "/.vimeo-library-manager/config.json"
@@ -196,6 +188,7 @@ function cli() {
             console.log("Found one video:");
             console.log();
             describeVideo(results[0]);
+            console.log();
         }
         else {
             console.log("Found", results.length, "videos:");
@@ -203,33 +196,40 @@ function cli() {
             results.forEach(describeVideo);
         }
     }));
+    program
+        .command("open-video <video-id>")
+        .description("Open a video in a browser")
+        .action(wrapAction(function (manager, args) {
+        var videoId = args[0];
+        manager.openVideo(videoId);
+    }));
     var update = program.command("update-data <video-id>");
     // @ts-ignore
-    addCommonOptions(update)
+    addUpdateEditOptions(update)
         .description("Update video meta-data")
         .action(wrapAction(function (manager, args) {
         var videoId = args[0], opts = args[1];
-        var data = parseCommonOptions(opts);
+        var data = parseUpdateEditOptions(opts);
         var video = manager.updateVideoData(videoId, data);
         console.log("Data updated.");
         describeVideo(video);
     }));
     var upload = program.command("upload-video <video-file>");
     // @ts-ignore
-    addCommonOptions(upload)
+    addUpdateEditOptions(upload);
+    // @ts-ignore
+    addUpdateReplaceOptions(upload)
         .option("--write-id-to <id-file>", "Write the ID of the new video to a file")
-        .option("--wait-for-encoding", "Wait until then video encoding finishes")
-        .option("--open", "Open in browser when ready")
         .description("Upload a new video")
         .action(wrapAction(function (manager, args) {
         var videoFileName = args[0], opts = args[1];
-        var data = parseCommonOptions(opts);
-        var waitForEncoding = opts.waitForEncoding, open = opts.open;
-        var config = {
+        var data = parseUpdateEditOptions(opts);
+        var waitForEncoding = opts.waitForEncoding, open = opts.open, writeIdTo = opts.writeIdTo;
+        var video = manager.uploadVideo(videoFileName, data, {
             waitForEncoding: waitForEncoding,
             openInBrowser: open,
-        };
-        var video = manager.uploadVideo(videoFileName, data, config);
+            idFileName: writeIdTo,
+        });
         describeVideo(video);
     }));
     program
@@ -238,6 +238,55 @@ function cli() {
         .action(wrapAction(function (manager, args) {
         var videoId = args[0];
         manager.deleteVideo(videoId);
+    }));
+    var replace = program.command("replace-content <video-id> <video-file-name>");
+    // @ts-ignore
+    addUpdateReplaceOptions(replace)
+        .option("--no-recreate-thumbnail", "Don't recreate the thumbnail")
+        .option("--ignore-hash", "Ignore the results of the hash comparison, upload anyway")
+        .option("--thumbnail-time-offset", "Specify the time offset from where to take the thumbnail. (The default is from the middle of the video.)")
+        .description("Replace video content")
+        .action(wrapAction(function (manager, args) {
+        var videoId = args[0], videoFileName = args[1], opts = args[2];
+        var waitForEncoding = opts.waitForEncoding, open = opts.open, recreateThumbnail = opts.recreateThumbnail, ignoreHash = opts.ignoreHash, thumbnailTimeOffset = opts.thumbnailTimeOffset;
+        manager.replaceVideoContent(videoId, videoFileName, {
+            waitForEncoding: waitForEncoding,
+            keepThumbnail: !recreateThumbnail,
+            thumbnailTime: thumbnailTimeOffset,
+            openInBrowser: open,
+            ignoreHash: ignoreHash,
+        });
+    }));
+    program
+        .command("list-thumbnails <video-id>")
+        .description("List the thumbnails for a video")
+        .action(wrapAction(function (manager, args) {
+        var videoId = args[0];
+        var thumbnails = manager.getAllThumbnails(videoId);
+        console.log("Thumbnails:", JSON.stringify(thumbnails, null, "  "), 
+        // thumbnails,
+        "\n");
+    }));
+    program
+        .command("create-thumbnail <video-id>")
+        .description("Create a new thumbnail for the video")
+        .option("--time-offset", "Specify the time offset from where to take the thumbnail. (The default is from the middle of the video.)")
+        .option("--no-set-default", "Don't set the new thumbnail as default")
+        .option("--open", "Open in browser")
+        .action(wrapAction(function (manager, args) {
+        var videoId = args[0], opts = args[1];
+        var active = opts.setDefault, openInBrowser = opts.open, time = opts.timeOffset;
+        manager.createThumbnail(videoId, { time: time, active: active, openInBrowser: openInBrowser });
+    }));
+    program
+        .command("recreate-thumbnail <video-id>")
+        .description("Re-create the thumbnail for the video")
+        .option("--time-offset", "Specify the time offset from where to take the thumbnail. (The default is from the middle of the video.)")
+        .option("--open", "Open in browser")
+        .action(wrapAction(function (manager, args) {
+        var videoId = args[0], opts = args[1];
+        var openInBrowser = opts.open, time = opts.timeOffset;
+        manager.recreateThumbnail(videoId, { time: time, openInBrowser: openInBrowser });
     }));
     console.log("[" + APP_NAME + "]");
     console.log();

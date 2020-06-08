@@ -2,6 +2,7 @@ import fs = require("fs");
 import crypto = require("crypto");
 const lodashGet = require("lodash.get");
 const ora = require("ora");
+const Fiber = require("fibers");
 import { wrapPromiseAsync1 } from "../fiber-async-function-wrappers";
 
 /**
@@ -143,4 +144,15 @@ export function slow(
     spinner.fail("Error while " + activity + ".");
     throw error;
   }
+}
+
+/**
+ * This function is usable in Fiber environments
+ */
+export function sleep(ms: number) {
+  const fiber = Fiber.current;
+  setTimeout(function () {
+    fiber.run();
+  }, ms);
+  Fiber.yield();
 }

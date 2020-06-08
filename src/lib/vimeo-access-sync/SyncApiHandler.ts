@@ -4,7 +4,7 @@ import {
   wrapPromiseAsync1,
   wrapPromiseAsync2,
   wrapPromiseAsync3,
-  // wrapPromiseAsync2,
+  wrapPromiseAsync3m,
 } from "../fiber-async-function-wrappers";
 import {
   Api,
@@ -16,6 +16,7 @@ import {
   VideoData,
   VideoUpdateData,
 } from "../vimeo-access";
+import { Picture } from "../vimeo-access/MoreTypes";
 
 export class SyncApiHandler implements SyncApi {
   private readonly _vimeoAsync: Api;
@@ -31,8 +32,21 @@ export class SyncApiHandler implements SyncApi {
     data: VideoUpdateData,
     onProgress: UploadProgressCallback
   ) => string;
-  readonly waitForEncoding: (videoId: string) => void;
-  readonly deleteVideo: (videoId: string) => string;
+  readonly waitForEncodingToStart: (videoId: string) => void;
+  readonly waitForEncodingToFinish: (videoId: string) => void;
+  readonly deleteVideo: (videoId: string) => void;
+  readonly replaceVideo: (
+    videoId: string,
+    videoFileName: string,
+    onProgress: UploadProgressCallback
+  ) => void;
+  readonly getAllThumbnails: (videoId: string) => Picture[];
+  readonly deleteThumbnail: (videoId: string, pictureId: string) => void;
+  readonly createThumbnail: (
+    videoId: string,
+    time: number,
+    active?: boolean
+  ) => Picture;
 
   _uploadVideoPromise(
     videoFileName: string,
@@ -43,6 +57,26 @@ export class SyncApiHandler implements SyncApi {
       this._vimeoAsync.uploadVideo(
         videoFileName,
         data,
+        (url: string) => {
+          resolve(url);
+        },
+        onProgress,
+        (error: string) => {
+          reject(new Error(error));
+        }
+      );
+    });
+  }
+
+  _replaceVideoPromise(
+    videoId: string,
+    videoFileName: string,
+    onProgress: UploadProgressCallback
+  ): Promise<string> {
+    return new Promise<string>((resolve, reject) => {
+      this._vimeoAsync.replaceVideo(
+        videoId,
+        videoFileName,
         (url: string) => {
           resolve(url);
         },
@@ -80,13 +114,30 @@ export class SyncApiHandler implements SyncApi {
       this._vimeoAsync
     );
     this.uploadVideo = wrapPromiseAsync3(this._uploadVideoPromise, this);
-
-    this.waitForEncoding = wrapPromiseAsync1(
-      this._vimeoAsync.waitForEncoding,
+    this.waitForEncodingToStart = wrapPromiseAsync1(
+      this._vimeoAsync.waitForEncodingToStart,
+      this._vimeoAsync
+    );
+    this.waitForEncodingToFinish = wrapPromiseAsync1(
+      this._vimeoAsync.waitForEncodingToFinish,
       this._vimeoAsync
     );
     this.deleteVideo = wrapPromiseAsync1(
       this._vimeoAsync.deleteVideo,
+      this._vimeoAsync
+    );
+    this.replaceVideo = wrapPromiseAsync3(this._replaceVideoPromise, this);
+    this.getAllThumbnails = wrapPromiseAsync1(
+      this._vimeoAsync.getAllThumbnails,
+      this._vimeoAsync
+    );
+    this.deleteThumbnail = wrapPromiseAsync2(
+      this._vimeoAsync.deleteThumbnail,
+      this._vimeoAsync
+    );
+    this.createThumbnail = wrapPromiseAsync3m<string, number, boolean, Picture>(
+      this._vimeoAsync.createThumbnail,
+      false,
       this._vimeoAsync
     );
   }

@@ -31,21 +31,26 @@ Not a lot ATM, since I just started writing this tool.
 Usage: vimeo-library-manager [options] [command]
 
 Options:
-  -V, --version                                     output the version number
-  -c, --config <config-file>                        path to config file
-  -d, --debug                                       output extra debugging
-  -h, --help                                        display help for command
+  -V, --version                                           output the version number
+  -c, --config <config-file>                              path to config file
+  -d, --debug                                             output extra debugging
+  -h, --help                                              display help for command
 
 Commands:
-  test                                              Test your Vimeo access
-  setup <client-id> <client-secret> <redirect-url>  Set up your Vimeo access
-  login [options]                                   Start the login process
-  logout                                            Log out from vimeo
-  list-videos                                       List my videos
-  update-data [options] <video-id>                  Update video meta-data
-  upload-video [options] <video-file>               Upload a new video
-  delete-video <video-id>                           Delete a video
-  help [command]                                    display help for command
+  test                                                    Test your Vimeo access
+  setup <client-id> <client-secret> <redirect-url>        Set up your Vimeo access
+  login [options]                                         Start the login process
+  logout                                                  Log out from vimeo
+  list-videos                                             List my videos
+  open-video <video-id>                                   Open a video in a browser
+  update-data [options] <video-id>                        Update video meta-data
+  upload-video [options] <video-file>                     Upload a new video
+  delete-video <video-id>                                 Delete a video
+  replace-content [options] <video-id> <video-file-name>  Replace video content
+  list-thumbnails <video-id>                              List the thumbnails for a video
+  create-thumbnail [options] <video-id>                   Create a new thumbnail for the video
+  recreate-thumbnail [options] <video-id>                 Re-create the thumbnail for the video
+  help [command]                                          display help for command
 ```
 
 ### Uploading a video
@@ -65,11 +70,10 @@ Options:
   --set-custom-file <JSON-data-file>         Set custom JSON data from a file
   --set-privacy <policy>                     Set privacy policy
   --set-password <password>                  Set the password
-  --write-id-to <id-file>                    Write the ID of the new video to a file
   --wait-for-encoding                        Wait until then video encoding finishes
-  --open                                     Open in browser when ready
+  --open                                     Open in browser
+  --write-id-to <id-file>                    Write the ID of the new video to a file
   -h, --help                                 display help for command
-
 ```
 
 
@@ -110,5 +114,18 @@ vimeo-library-manager update-data 425342398 --set-password "magic"
 
 ### Updating the content of a video
 
-This is coming next.
 
+```
+Usage: vimeo-library-manager replace-content [options] <video-id> <video-file-name>
+
+Replace video content
+
+Options:
+  --wait-for-encoding      Wait until the video encoding finishes
+  --open                   Open in browser
+  --no-recreate-thumbnail  Don't recreate the thumbnail
+  --ignore-hash            Ignore the results of the hash comparison, upload anyway
+  --thumbnail-time-offset  Specify the time offset from where to take the thumbnail. (The default is from the middle
+                           of the video.)
+  -h, --help               display help for command
+```

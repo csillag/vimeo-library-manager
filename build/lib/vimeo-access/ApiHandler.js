@@ -69,22 +69,21 @@ var ApiHandler = /** @class */ (function () {
         return new Promise(function (resolve, reject) {
             _this._client.accessToken(code, _this._auth.redirectUrl, function (error, response) {
                 if (error) {
-                    var errorData = JSON.parse(error.message);
-                    // console.error(
-                    //   "Error while getting access token:",
-                    //   JSON.stringify(errorData, null, "  ")
-                    // );
-                    reject(errorData.error_description);
-                    return;
+                    reject(convertError(error));
                 }
-                var accessToken = response.access_token, user = response.user, scope = response.scope;
-                if (accessToken) {
-                    resolve({
-                        accessToken: accessToken,
-                        userUri: user.uri,
-                        userName: user.name,
-                        scopes: scope.split(" "),
-                    });
+                else {
+                    var accessToken = response.access_token, user = response.user, scope = response.scope;
+                    if (accessToken) {
+                        resolve({
+                            accessToken: accessToken,
+                            userUri: user.uri,
+                            userName: user.name,
+                            scopes: scope.split(" "),
+                        });
+                    }
+                    else {
+                        reject(new Error("No access token received!"));
+                    }
                 }
             });
         });
@@ -110,9 +109,10 @@ var ApiHandler = /** @class */ (function () {
         if (wantedPage === void 0) { wantedPage = 1; }
         if (loaded === void 0) { loaded = []; }
         return new Promise(function (resolve, reject) {
+            var path = "/me/videos?page=" + wantedPage;
             _this._client.request({
                 method: "GET",
-                path: "/me/videos?page=" + wantedPage,
+                path: path,
             }, function (error, body, _statusCode, _headers) {
                 if (error) {
                     reject(convertError(error));
@@ -120,11 +120,11 @@ var ApiHandler = /** @class */ (function () {
                 else {
                     var total = body.total, currentPage = body.page, per_page = body.per_page, data = body.data;
                     if (currentPage !== wantedPage) {
-                        reject("I don't understand what is going on here.");
+                        reject(new Error("I don't understand what is going on here."));
                         return;
                     }
                     var totalPages = Math.ceil(total / per_page);
-                    var isLast = totalPages === currentPage;
+                    var isLast = totalPages <= currentPage;
                     var upToNow = __spreadArrays(loaded, data); // Unite the already loaded and the new data
                     if (isLast) {
                         resolve(upToNow);
@@ -172,10 +172,10 @@ var ApiHandler = /** @class */ (function () {
                             resolve();
                             break;
                         case 400:
-                            reject("A parameter is invalid.");
+                            reject(new Error("A parameter is invalid."));
                             break;
                         case 402:
-                            reject("You are not allowed to do this!");
+                            reject(new Error("You are not allowed to do this!"));
                     }
                 }
             });
@@ -184,7 +184,29 @@ var ApiHandler = /** @class */ (function () {
     ApiHandler.prototype.uploadVideo = function (videoFileName, data, onSuccess, onProgress, onFail) {
         this._client.upload(videoFileName, data, onSuccess, onProgress, onFail);
     };
-    ApiHandler.prototype.waitForEncoding = function (videoId) {
+    ApiHandler.prototype.waitForEncodingToStart = function (videoId) {
+        var _this = this;
+        return new Promise(function (resolve, reject) {
+            var checkStatus = function () {
+                _this.getVideo(videoId).then(function (video) {
+                    var status = video.transcode.status;
+                    switch (status) {
+                        case "complete":
+                            setTimeout(checkStatus, 1000);
+                            break;
+                        case "error":
+                            reject(new Error("Transcoding failed"));
+                            break;
+                        case "in_progress":
+                            resolve();
+                            break;
+                    }
+                }, reject);
+            };
+            checkStatus();
+        });
+    };
+    ApiHandler.prototype.waitForEncodingToFinish = function (videoId) {
         var _this = this;
         return new Promise(function (resolve, reject) {
             var checkStatus = function () {
@@ -195,7 +217,7 @@ var ApiHandler = /** @class */ (function () {
                             resolve();
                             break;
                         case "error":
-                            reject("Transcoding failed");
+                            reject(new Error("Transcoding failed"));
                             break;
                         case "in_progress":
                             setTimeout(checkStatus, 1000);
@@ -206,10 +228,10 @@ var ApiHandler = /** @class */ (function () {
             checkStatus();
         });
     };
-    ApiHandler.prototype.deleteVideo = function (videoIs) {
+    ApiHandler.prototype.deleteVideo = function (videoId) {
         var _this = this;
         return new Promise(function (resolve, reject) {
-            _this._client.request({ method: "DELETE", path: "/videos/" + videoIs }, function (error, _body, statusCode, _headers) {
+            _this._client.request({ method: "DELETE", path: "/videos/" + videoId }, function (error, body, statusCode, _headers) {
                 if (error) {
                     reject(convertError(error));
                     return;
@@ -217,11 +239,87 @@ var ApiHandler = /** @class */ (function () {
                 else {
                     switch (statusCode) {
                         case 204:
-                            resolve("The video was deleted.");
+                            resolve();
                             break;
                         case 403:
-                            reject("The authenticated user can't delete this video.");
+                            reject(new Error("The authenticated user can't delete this video."));
                             break;
+                        default:
+                            reject(new Error("Can't delete video: " + body));
+                            break;
+                    }
+                }
+            });
+        });
+    };
+    ApiHandler.prototype.replaceVideo = function (videoId, videoFileName, onSuccess, onProgress, onFail) {
+        this._client.replace(videoFileName, "/videos/" + videoId, {}, onSuccess, onProgress, onFail);
+    };
+    ApiHandler.prototype.getAllThumbnails = function (videoId) {
+        var _this = this;
+        return new Promise(function (resolve, reject) {
+            _this._client.request({
+                method: "GET",
+                path: "/videos/" + videoId + "/pictures",
+            }, function (error, body, _statusCode, _headers) {
+                if (error) {
+                    reject(convertError(error));
+                }
+                else {
+                    resolve(body.data);
+                }
+            });
+        });
+    };
+    ApiHandler.prototype.deleteThumbnail = function (videoId, pictureId) {
+        var _this = this;
+        return new Promise(function (resolve, reject) {
+            var path = "/videos/" + videoId + "/pictures/" + pictureId;
+            _this._client.request({
+                method: "DELETE",
+                path: path,
+            }, function (error, body, statusCode, _headers) {
+                if (error) {
+                    reject(convertError(error));
+                    return;
+                }
+                else {
+                    switch (statusCode) {
+                        case 204:
+                            resolve();
+                            break;
+                        case 403:
+                            reject(new Error("The authenticated user can't delete this thumbnail."));
+                            break;
+                        default:
+                            reject(new Error("Can't delete thumbnail: " + body));
+                            break;
+                    }
+                }
+            });
+        });
+    };
+    ApiHandler.prototype.createThumbnail = function (videoId, time, active) {
+        var _this = this;
+        return new Promise(function (resolve, reject) {
+            _this._client.request({
+                method: "POST",
+                path: "/videos/" + videoId + "/pictures",
+                query: {
+                    time: time,
+                    active: active,
+                },
+            }, function (error, body, statusCode, _headers) {
+                if (error) {
+                    reject(convertError(error));
+                }
+                else {
+                    switch (statusCode) {
+                        case 201:
+                            resolve(body);
+                            break;
+                        default:
+                            throw new Error("Couldn't create thumbnail: " + body);
                     }
                 }
             });

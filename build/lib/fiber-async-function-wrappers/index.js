@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.wrapPromiseAsync2m = exports.wrapPromiseAsync1m = exports.wrapPromiseAsync3 = exports.wrapPromiseAsync2 = exports.wrapPromiseAsync1 = exports.wrapPromiseAsync0 = void 0;
-var Future = require('fibers/future');
+exports.wrapPromiseAsync3m = exports.wrapPromiseAsync2m = exports.wrapPromiseAsync1m = exports.wrapPromiseAsync3 = exports.wrapPromiseAsync2 = exports.wrapPromiseAsync1 = exports.wrapPromiseAsync0 = void 0;
+var Future = require("fibers/future");
 /**
  * Convert an asynchronous function that returns a promise to use node-style callbacks
  *
@@ -24,7 +24,9 @@ function wrapPromise0(promiseFunction, context) {
 function wrapPromiseAsync0(promiseFunction, context) {
     var cbFunction = wrapPromise0(promiseFunction, context);
     var futureFunction = Future.wrap(cbFunction);
-    var simpleFunction = function () { return Future.task(function () { return futureFunction().wait(); }).wait(); };
+    var simpleFunction = function () {
+        return Future.task(function () { return futureFunction().wait(); }).wait();
+    };
     return simpleFunction;
 }
 exports.wrapPromiseAsync0 = wrapPromiseAsync0;
@@ -76,9 +78,7 @@ function wrapPromise2(promiseFunction, context) {
 function wrapPromiseAsync2(promiseFunction, context) {
     var cbFunction = wrapPromise2(promiseFunction, context);
     var futureFunction = Future.wrap(cbFunction);
-    var simpleFunction = function (data1, data2) {
-        return Future.task(function () { return futureFunction(data1, data2).wait(); }).wait();
-    };
+    var simpleFunction = function (data1, data2) { return Future.task(function () { return futureFunction(data1, data2).wait(); }).wait(); };
     return simpleFunction;
 }
 exports.wrapPromiseAsync2 = wrapPromiseAsync2;
@@ -125,3 +125,10 @@ function wrapPromiseAsync2m(f, defaultValue, context) {
     return wrapMaybe2(wrapPromiseAsync2(f, context), defaultValue);
 }
 exports.wrapPromiseAsync2m = wrapPromiseAsync2m;
+function wrapMaybe3(f, defaultValue) {
+    return function (d1, d2, d3) { return f(d1, d2, d3 === undefined ? defaultValue : d3); };
+}
+function wrapPromiseAsync3m(f, defaultValue, context) {
+    return wrapMaybe3(wrapPromiseAsync3(f, context), defaultValue);
+}
+exports.wrapPromiseAsync3m = wrapPromiseAsync3m;

@@ -1,10 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.slow = exports.reduceChanges = exports.getHashSync = exports.parseQuery = void 0;
+exports.sleep = exports.slow = exports.reduceChanges = exports.getHashSync = exports.parseQuery = void 0;
 var fs = require("fs");
 var crypto = require("crypto");
 var lodashGet = require("lodash.get");
 var ora = require("ora");
+var Fiber = require("fibers");
 var fiber_async_function_wrappers_1 = require("../fiber-async-function-wrappers");
 /**
  * A simple function to parse a HTML query string to key-value pairs
@@ -130,3 +131,14 @@ function slow(activity, action, config) {
     }
 }
 exports.slow = slow;
+/**
+ * This function is usable in Fiber environments
+ */
+function sleep(ms) {
+    var fiber = Fiber.current;
+    setTimeout(function () {
+        fiber.run();
+    }, ms);
+    Fiber.yield();
+}
+exports.sleep = sleep;
