@@ -1,6 +1,6 @@
 {
   "name": "vimeo-library-manager",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "A manager for your Vimeo libraries",
   "author": "Kristof Csillag <csillag.kristof@gmail.com>",
   "main": "build/index.js",

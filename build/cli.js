@@ -83,9 +83,11 @@ function parseUpdateEditOptions(options) {
     }
     if (setDescriptionFile !== undefined) {
         try {
-            data.description = fs.readFileSync(setDescriptionFile, {
-                encoding: "utf8",
-            });
+            data.description = fs
+                .readFileSync(setDescriptionFile, {
+                    encoding: "utf8",
+                })
+                .trim();
         }
         catch (error) {
             throw new Error("Can't read specified description file '" +
@@ -122,11 +124,11 @@ function describeVideo(video) {
 }
 function cli() {
     var program = new commander_1.Command(APP_NAME);
-    program.version("0.0.7");
+    program.version("0.0.8");
     program
         .option("-c, --config <config-file>", "path to config file"
-    // process.env.HOME + "/.vimeo-library-manager/config.json"
-    )
+            // process.env.HOME + "/.vimeo-library-manager/config.json"
+        )
         .option("-d, --debug", "output extra debugging");
     program
         .command("test")
