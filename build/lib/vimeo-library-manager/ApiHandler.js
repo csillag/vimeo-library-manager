@@ -290,8 +290,7 @@ var ApiHandler = /** @class */ (function () {
         if (!Object.keys(data).length) {
             throw new Error("Your video has all this data! Nothing to update.");
         }
-        console.log("Actual changes:", JSON.stringify(data, null, "  "));
-        console.log();
+        console.log("Change(s) detected at: ", util_1.getKeys(data).join(", ") + ".", "\n");
         util_1.slow("updating data", function () {
             _this._vimeo.editVideo(videoId, data);
         });

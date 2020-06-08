@@ -85,8 +85,8 @@ function parseUpdateEditOptions(options) {
         try {
             data.description = fs
                 .readFileSync(setDescriptionFile, {
-                    encoding: "utf8",
-                })
+                encoding: "utf8",
+            })
                 .trim();
         }
         catch (error) {
@@ -124,11 +124,11 @@ function describeVideo(video) {
 }
 function cli() {
     var program = new commander_1.Command(APP_NAME);
-    program.version("0.0.8");
+    program.version("0.0.9");
     program
         .option("-c, --config <config-file>", "path to config file"
-            // process.env.HOME + "/.vimeo-library-manager/config.json"
-        )
+    // process.env.HOME + "/.vimeo-library-manager/config.json"
+    )
         .option("-d, --debug", "output extra debugging");
     program
         .command("test")
@@ -213,7 +213,6 @@ function cli() {
         var videoId = args[0], opts = args[1];
         var data = parseUpdateEditOptions(opts);
         var video = manager.updateVideoData(videoId, data);
-        console.log("Data updated.");
         describeVideo(video);
     }));
     var upload = program.command("upload-video <video-file>");

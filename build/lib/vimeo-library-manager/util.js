@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.sleep = exports.slow = exports.reduceChanges = exports.getHashSync = exports.parseQuery = void 0;
+exports.sleep = exports.slow = exports.getKeys = exports.reduceChanges = exports.getHashSync = exports.parseQuery = void 0;
 var fs = require("fs");
 var crypto = require("crypto");
 var lodashGet = require("lodash.get");
@@ -104,6 +104,25 @@ function reduceChanges(change, reference, path, changeParent, currentKey) {
     }
 }
 exports.reduceChanges = reduceChanges;
+function collectKeys(data, keys, path) {
+    if (path === void 0) { path = ""; }
+    var node = get(data, path);
+    if (typeof node === "object") {
+        // TODO: look at this recursively
+        Object.keys(node).forEach(function (key) {
+            return collectKeys(data, keys, path + "." + key);
+        });
+    }
+    else {
+        keys.push(path.substr(1));
+    }
+}
+function getKeys(data) {
+    var results = [];
+    collectKeys(data, results);
+    return results;
+}
+exports.getKeys = getKeys;
 function slow(activity, action, config) {
     if (config === void 0) { config = {}; }
     var spinner = ora({

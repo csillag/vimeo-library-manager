@@ -107,6 +107,24 @@ export function reduceChanges(
   }
 }
 
+function collectKeys(data: Object, keys: string[], path = "") {
+  const node = get(data, path);
+  if (typeof node === "object") {
+    // TODO: look at this recursively
+    Object.keys(node).forEach((key) =>
+      collectKeys(data, keys, path + "." + key)
+    );
+  } else {
+    keys.push(path.substr(1));
+  }
+}
+
+export function getKeys(data: Object) {
+  const results: string[] = [];
+  collectKeys(data, results);
+  return results;
+}
+
 interface SlowConfig {
   hide?: boolean;
 }

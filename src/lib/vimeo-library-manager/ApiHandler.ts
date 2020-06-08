@@ -27,7 +27,14 @@ import {
   UploadConfig,
 } from "./Api";
 import { AccessScope, VideoData } from "../vimeo-access";
-import { getHashSync, parseQuery, reduceChanges, sleep, slow } from "./util";
+import {
+  getHashSync,
+  getKeys,
+  parseQuery,
+  reduceChanges,
+  sleep,
+  slow,
+} from "./util";
 import { Picture, PictureSizeInfo } from "../vimeo-access/MoreTypes";
 
 interface Session {
@@ -376,8 +383,11 @@ export class ApiHandler implements Api {
       throw new Error("Your video has all this data! Nothing to update.");
     }
 
-    console.log("Actual changes:", JSON.stringify(data, null, "  "));
-    console.log();
+    console.log(
+      "Change(s) detected at: ",
+      getKeys(data).join(", ") + ".",
+      "\n"
+    );
 
     slow("updating data", () => {
       this._vimeo.editVideo(videoId, data);

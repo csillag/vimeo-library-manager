@@ -102,11 +102,11 @@ function parseUpdateEditOptions(options: any): VideoUpdateData {
   }
   if (setDescriptionFile !== undefined) {
     try {
-        data.description = fs
-            .readFileSync(setDescriptionFile, {
-                encoding: "utf8",
-            })
-            .trim();
+      data.description = fs
+        .readFileSync(setDescriptionFile, {
+          encoding: "utf8",
+        })
+        .trim();
     } catch (error) {
       throw new Error(
         "Can't read specified description file '" +
@@ -148,14 +148,14 @@ function describeVideo(video: VideoData) {
 function cli() {
   const program = new Command(APP_NAME);
 
-    program.version("0.0.8");
-    program
-        .option(
-            "-c, --config <config-file>",
-            "path to config file"
-            // process.env.HOME + "/.vimeo-library-manager/config.json"
-        )
-        .option("-d, --debug", "output extra debugging");
+  program.version("0.0.9");
+  program
+    .option(
+      "-c, --config <config-file>",
+      "path to config file"
+      // process.env.HOME + "/.vimeo-library-manager/config.json"
+    )
+    .option("-d, --debug", "output extra debugging");
 
   program
     .command("test")
@@ -262,7 +262,6 @@ function cli() {
         const [videoId, opts] = args;
         const data = parseUpdateEditOptions(opts);
         const video = manager.updateVideoData(videoId, data);
-        console.log("Data updated.");
         describeVideo(video);
       })
     );
