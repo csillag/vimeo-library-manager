@@ -146,7 +146,7 @@ function describeVideo(video: VideoData) {
 function cli() {
   const program = new Command(APP_NAME);
 
-  program.version("0.0.6");
+  program.version("0.0.7");
   program
     .option(
       "-c, --config <config-file>",
@@ -311,7 +311,7 @@ function cli() {
       "Ignore the results of the hash comparison, upload anyway"
     )
     .option(
-      "--thumbnail-time-offset",
+      "--thumbnail-time-offset <seconds>",
       "Specify the time offset from where to take the thumbnail. (The default is from the middle of the video.)"
     )
     .description("Replace video content")
@@ -355,7 +355,7 @@ function cli() {
     .command("create-thumbnail <video-id>")
     .description("Create a new thumbnail for the video")
     .option(
-      "--time-offset",
+      "--time-offset <seconds>",
       "Specify the time offset from where to take the thumbnail. (The default is from the middle of the video.)"
     )
     .option("--no-set-default", "Don't set the new thumbnail as default")
@@ -376,7 +376,7 @@ function cli() {
     .command("recreate-thumbnail <video-id>")
     .description("Re-create the thumbnail for the video")
     .option(
-      "--time-offset",
+      "--time-offset <seconds>",
       "Specify the time offset from where to take the thumbnail. (The default is from the middle of the video.)"
     )
     .option("--open", "Open in browser")

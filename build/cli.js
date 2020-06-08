@@ -122,7 +122,7 @@ function describeVideo(video) {
 }
 function cli() {
     var program = new commander_1.Command(APP_NAME);
-    program.version("0.0.6");
+    program.version("0.0.7");
     program
         .option("-c, --config <config-file>", "path to config file"
     // process.env.HOME + "/.vimeo-library-manager/config.json"
@@ -244,7 +244,7 @@ function cli() {
     addUpdateReplaceOptions(replace)
         .option("--no-recreate-thumbnail", "Don't recreate the thumbnail")
         .option("--ignore-hash", "Ignore the results of the hash comparison, upload anyway")
-        .option("--thumbnail-time-offset", "Specify the time offset from where to take the thumbnail. (The default is from the middle of the video.)")
+        .option("--thumbnail-time-offset <seconds>", "Specify the time offset from where to take the thumbnail. (The default is from the middle of the video.)")
         .description("Replace video content")
         .action(wrapAction(function (manager, args) {
         var videoId = args[0], videoFileName = args[1], opts = args[2];
@@ -270,7 +270,7 @@ function cli() {
     program
         .command("create-thumbnail <video-id>")
         .description("Create a new thumbnail for the video")
-        .option("--time-offset", "Specify the time offset from where to take the thumbnail. (The default is from the middle of the video.)")
+        .option("--time-offset <seconds>", "Specify the time offset from where to take the thumbnail. (The default is from the middle of the video.)")
         .option("--no-set-default", "Don't set the new thumbnail as default")
         .option("--open", "Open in browser")
         .action(wrapAction(function (manager, args) {
@@ -281,7 +281,7 @@ function cli() {
     program
         .command("recreate-thumbnail <video-id>")
         .description("Re-create the thumbnail for the video")
-        .option("--time-offset", "Specify the time offset from where to take the thumbnail. (The default is from the middle of the video.)")
+        .option("--time-offset <seconds>", "Specify the time offset from where to take the thumbnail. (The default is from the middle of the video.)")
         .option("--open", "Open in browser")
         .action(wrapAction(function (manager, args) {
         var videoId = args[0], opts = args[1];
