@@ -59,6 +59,11 @@ export interface UploadConfig {
   waitForEncoding?: boolean;
 
   /**
+   * If we should manually create the thumbnail, from which point of the video should we take it?
+   */
+  thumbnailTime?: number;
+
+  /**
    * Should we open the video in a browser?
    */
   openInBrowser?: boolean;
@@ -67,6 +72,16 @@ export interface UploadConfig {
    * Should we write the resulting videoId to a file?
    */
   idFileName?: string;
+}
+
+/**
+ * Configuration for data update behavior
+ */
+export interface UpdateDataConfig {
+  /**
+   * Don't report on changes
+   */
+  silent?: boolean;
 }
 
 /**
@@ -181,7 +196,11 @@ export interface Api {
   /**
    * Update info about a video
    */
-  updateVideoData(videoId: string, data: VideoUpdateData): VideoData;
+  updateVideoData(
+    videoId: string,
+    data: VideoUpdateData,
+    config?: UpdateDataConfig
+  ): VideoData;
 
   /**
    * Upload a new video

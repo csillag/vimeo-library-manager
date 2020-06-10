@@ -24,6 +24,7 @@ import {
   ReCreateThumbnailConfig,
   ReplaceConfig,
   SetupInfo,
+  UpdateDataConfig,
   UploadConfig,
 } from "./Api";
 import { AccessScope, VideoData } from "../vimeo-access";
@@ -358,7 +359,13 @@ export class ApiHandler implements Api {
     return result!;
   }
 
-  updateVideoData(videoId: string, data: VideoUpdateData): VideoData {
+  updateVideoData(
+    videoId: string,
+    data: VideoUpdateData,
+    config: UpdateDataConfig = {}
+  ): VideoData {
+    const { silent } = config;
+
     this._log(
       "Editing video",
       videoId,
@@ -381,14 +388,19 @@ export class ApiHandler implements Api {
     reduceChanges(data, video);
 
     if (!Object.keys(data).length) {
-      throw new Error("Your video has all this data! Nothing to update.");
+      console.log("Your video has all this data! Nothing to update.", "\n");
+      return video;
     }
 
-    console.log(
-      "Change(s) detected at: ",
-      getKeys(data).join(", ") + ".",
-      "\n"
-    );
+    if (!silent) {
+      console.log(
+        "Change(s) detected at: ",
+        getKeys(data).join(", ") + ".",
+        "\n"
+      );
+    }
+
+    this._log(data);
 
     slow("updating data", () => {
       this._vimeo.editVideo(videoId, data);
@@ -410,11 +422,18 @@ export class ApiHandler implements Api {
       "\n"
     );
 
-    const { waitForEncoding, openInBrowser, idFileName } = config;
+    const {
+      waitForEncoding,
+      thumbnailTime,
+      openInBrowser,
+      idFileName,
+    } = config;
+
+    this._log("Received data:", data);
 
     let hash: string;
     slow("calculating hash", () => {
-      hash = getHashSync(videoFileName);
+      hash = "http://" + getHashSync(videoFileName);
       mergeInto(data, { embed: { logos: { custom: { link: hash } } } });
     });
 
@@ -439,15 +458,33 @@ export class ApiHandler implements Api {
         );
       }
     }
-    if (waitForEncoding) {
+
+    /**
+     * For some reason, just after uploading, some fields (like the name a.k.a. title) get messed up.
+     * To work around this, we update the metadata right away.
+     */
+    this.updateVideoData(videoId, data, { silent: true });
+
+    if (waitForEncoding || thumbnailTime !== undefined) {
       slow("waiting for encoding", () => {
         this._vimeo.waitForEncodingToFinish(videoId);
       });
     }
+
+    /**
+     * If we were passed a time, create a thumbnail from that spot
+     */
+    if (thumbnailTime !== undefined) {
+      this.recreateThumbnail(videoId, { time: thumbnailTime });
+    }
+
     let video: VideoData;
     slow("checking end result", () => {
       video = this._vimeo.getVideo(videoId);
     });
+
+    this._log("Video data is", video!);
+
     if (openInBrowser) {
       console.log("Opening in browser:", video!.link, "\n");
       open(video!.link).then();
@@ -496,7 +533,8 @@ export class ApiHandler implements Api {
           "\n"
         );
       } else {
-        throw new Error("The video content is the same!");
+        console.log("The video content is the same. Nothing to update.", "\n");
+        return video;
       }
     }
 
@@ -525,7 +563,7 @@ export class ApiHandler implements Api {
 
     if (!keepThumbnail) {
       slow("waiting for the video to be ready for thumbnail generation", () => {
-        sleep(10 * 1000); // TODO: what out what is a safe value here
+        sleep(30 * 1000); // TODO: what out what is a safe value here
       });
       this.recreateThumbnail(videoId, { time: thumbnailTime });
     }

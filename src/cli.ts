@@ -137,6 +137,10 @@ function parseUpdateEditOptions(options: any): VideoUpdateData {
 function addUpdateReplaceOptions(command: Command): Command {
   return command
     .option("--wait-for-encoding", "Wait until the video encoding finishes")
+    .option(
+      "--thumbnail-time-offset <seconds>",
+      "Specify the time offset from where to take the thumbnail. (The default is from the middle of the video.)"
+    )
     .option("--open", "Open in browser");
 }
 
@@ -280,9 +284,10 @@ function cli() {
       wrapAction((manager, args) => {
         const [videoFileName, opts] = args;
         const data = parseUpdateEditOptions(opts);
-        const { waitForEncoding, open, writeIdTo } = opts;
+        const { waitForEncoding, thumbnailTimeOffset, open, writeIdTo } = opts;
         const video = manager.uploadVideo(videoFileName, data, {
           waitForEncoding,
+          thumbnailTime: thumbnailTimeOffset,
           openInBrowser: open,
           idFileName: writeIdTo,
         });
@@ -310,10 +315,6 @@ function cli() {
     .option(
       "--ignore-hash",
       "Ignore the results of the hash comparison, upload anyway"
-    )
-    .option(
-      "--thumbnail-time-offset <seconds>",
-      "Specify the time offset from where to take the thumbnail. (The default is from the middle of the video.)"
     )
     .description("Replace video content")
     .action(
