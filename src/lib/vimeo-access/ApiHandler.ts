@@ -9,8 +9,12 @@ import {
   UploadSuccessCallback,
   VideoUpdateData,
 } from "./Types";
-import { Vimeo } from "vimeo";
-import { Picture, VideoData } from "./MoreTypes";
+import { RequestOptions, Vimeo } from "vimeo";
+import { Picture, UploadPicture, VideoData } from "./MoreTypes";
+import { AxiosResponse } from "axios";
+// const request = require("request");
+// import { Response } from "request";
+const axios = require("axios").default;
 
 const wantedScopes: AccessScope[] = [
   "public",
@@ -378,6 +382,98 @@ export class ApiHandler implements Api {
           }
         }
       );
+    });
+  }
+
+  initiateThumbnailUpload(picturesUri: string): Promise<UploadPicture> {
+    return new Promise<UploadPicture>((resolve, reject) => {
+      this._client.request(
+        {
+          method: "POST",
+          path: picturesUri,
+        },
+        (error: any, body, statusCode, _headers) => {
+          if (error) {
+            reject(convertError(error));
+          } else {
+            switch (statusCode) {
+              case 201:
+                resolve(body);
+                break;
+              default:
+                throw new Error(
+                  "Couldn't initiate thumbnail uploading: " + body
+                );
+            }
+          }
+        }
+      );
+    });
+  }
+
+  uploadThumbnail(
+    uploadUri: string,
+    contentType: string,
+    data: Buffer
+  ): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+      const headers = {
+        "Content-Type": contentType,
+        Accept: "application/vnd.vimeo.*+json;version=3.4",
+      };
+      this.log("Starting image upload to", uploadUri);
+      axios({
+        method: "put",
+        url: uploadUri,
+        headers,
+        data,
+      }).then(
+        (result: AxiosResponse<any>) => {
+          const { status, statusText, data } = result;
+          if (status === 200) {
+            resolve();
+          } else {
+            reject(
+              new Error(
+                "Failed to upload thumbnail: " + statusText + "; " + data
+              )
+            );
+          }
+        },
+        (error: any) => {
+          reject(new Error("Failed to upload thumbnail: " + error.toString()));
+        }
+      );
+    });
+  }
+
+  setThumbnailActive(thumbnailUri: string, active: boolean): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+      const req: RequestOptions = {
+        method: "PATCH",
+        path: thumbnailUri,
+        query: { active } as any, // The JSON can travel here just fine.
+        headers: { "Content-Type": "application/json" },
+      };
+      this.log("Sending", req);
+      this._client.request(req, (error: any, _body, statusCode, _headers) => {
+        if (error) {
+          reject(convertError(error));
+        } else {
+          switch (statusCode) {
+            case 200:
+              resolve();
+              break;
+            case 400:
+              reject(new Error("A parameter is invalid."));
+              break;
+            case 402:
+              reject(new Error("You are not allowed to do this!"));
+            default:
+              reject(new Error("Something went wrong."));
+          }
+        }
+      });
     });
   }
 }

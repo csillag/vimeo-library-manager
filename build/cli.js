@@ -117,6 +117,7 @@ function addUpdateReplaceOptions(command) {
     return command
         .option("--wait-for-encoding", "Wait until the video encoding finishes")
         .option("--thumbnail-time-offset <seconds>", "Specify the time offset from where to take the thumbnail. (The default is from the middle of the video.)")
+        .option("--thumbnail-file <image-file>", "Use a custom image file as a thumbnail.")
         .option("--open", "Open in browser");
 }
 function describeVideo(video) {
@@ -125,7 +126,7 @@ function describeVideo(video) {
 }
 function cli() {
     var program = new commander_1.Command(APP_NAME);
-    program.version("0.0.11");
+    program.version("0.0.12");
     program
         .option("-c, --config <config-file>", "path to config file"
     // process.env.HOME + "/.vimeo-library-manager/config.json"
@@ -226,10 +227,11 @@ function cli() {
         .action(wrapAction(function (manager, args) {
         var videoFileName = args[0], opts = args[1];
         var data = parseUpdateEditOptions(opts);
-        var waitForEncoding = opts.waitForEncoding, thumbnailTimeOffset = opts.thumbnailTimeOffset, open = opts.open, writeIdTo = opts.writeIdTo;
+        var waitForEncoding = opts.waitForEncoding, thumbnailTimeOffset = opts.thumbnailTimeOffset, thumbnailFile = opts.thumbnailFile, open = opts.open, writeIdTo = opts.writeIdTo;
         var video = manager.uploadVideo(videoFileName, data, {
             waitForEncoding: waitForEncoding,
             thumbnailTime: thumbnailTimeOffset,
+            thumbnailImageFile: thumbnailFile,
             openInBrowser: open,
             idFileName: writeIdTo,
         });
@@ -250,11 +252,12 @@ function cli() {
         .description("Replace video content")
         .action(wrapAction(function (manager, args) {
         var videoId = args[0], videoFileName = args[1], opts = args[2];
-        var waitForEncoding = opts.waitForEncoding, open = opts.open, recreateThumbnail = opts.recreateThumbnail, ignoreHash = opts.ignoreHash, thumbnailTimeOffset = opts.thumbnailTimeOffset;
+        var waitForEncoding = opts.waitForEncoding, open = opts.open, recreateThumbnail = opts.recreateThumbnail, ignoreHash = opts.ignoreHash, thumbnailTimeOffset = opts.thumbnailTimeOffset, thumbnailFile = opts.thumbnailFile;
         manager.replaceVideoContent(videoId, videoFileName, {
             waitForEncoding: waitForEncoding,
             keepThumbnail: !recreateThumbnail,
             thumbnailTime: thumbnailTimeOffset,
+            thumbnailImageFile: thumbnailFile,
             openInBrowser: open,
             ignoreHash: ignoreHash,
         });
@@ -265,9 +268,11 @@ function cli() {
         .action(wrapAction(function (manager, args) {
         var videoId = args[0];
         var thumbnails = manager.getAllThumbnails(videoId);
-        console.log("Thumbnails:", JSON.stringify(thumbnails, null, "  "), 
-        // thumbnails,
-        "\n");
+        console.log("Thumbnails for", videoId, "are:", "\n", thumbnails
+            .map(function (t) {
+            return " * " + t.uri + " " + t.type + (t.active ? " (active)" : "");
+        })
+            .join("\n"), "\n");
     }));
     program
         .command("create-thumbnail <video-id>")
@@ -282,13 +287,26 @@ function cli() {
     }));
     program
         .command("recreate-thumbnail <video-id>")
-        .description("Re-create the thumbnail for the video")
+        .description("Re-create the thumbnail for a video")
         .option("--time-offset <seconds>", "Specify the time offset from where to take the thumbnail. (The default is from the middle of the video.)")
         .option("--open", "Open in browser")
         .action(wrapAction(function (manager, args) {
         var videoId = args[0], opts = args[1];
         var openInBrowser = opts.open, time = opts.timeOffset;
         manager.recreateThumbnail(videoId, { time: time, openInBrowser: openInBrowser });
+    }));
+    program
+        .command("upload-thumbnail <video-id> <image-file>")
+        .description("Upload a custom thumbnail for a video")
+        .option("--no-activate", "Don't make the new thumbnail active. (You can do it later.)")
+        .option("--open", "Open in browser")
+        .action(wrapAction(function (manager, args) {
+        var videoId = args[0], imageFileName = args[1], opts = args[2];
+        var activate = opts.activate, open = opts.open;
+        manager.uploadThumbnail(videoId, imageFileName, {
+            active: activate,
+            openInBrowser: open,
+        });
     }));
     console.log("[" + APP_NAME + "]");
     console.log();

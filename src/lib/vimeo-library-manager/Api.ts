@@ -64,6 +64,11 @@ export interface UploadConfig {
   thumbnailTime?: number;
 
   /**
+   * Should we use a custom image as a thumbnail?
+   */
+  thumbnailImageFile?: string;
+
+  /**
    * Should we open the video in a browser?
    */
   openInBrowser?: boolean;
@@ -116,6 +121,11 @@ export interface ReplaceConfig {
   thumbnailTime?: number;
 
   /**
+   * Use a custom image file for thumbnail
+   */
+  thumbnailImageFile?: string;
+
+  /**
    * Should we open the video in a browser?
    */
   openInBrowser?: boolean;
@@ -140,6 +150,18 @@ export interface CreateThumbnailConfig extends ReCreateThumbnailConfig {
    * Set this as the default thumbnail
    */
   active?: boolean;
+}
+
+export interface UploadThumbnailConfig {
+  /**
+   * Set this as the default thumbnail
+   */
+  active?: boolean;
+
+  /**
+   * Should we open the video in a browser?
+   */
+  openInBrowser?: boolean;
 }
 
 export interface Api {
@@ -254,4 +276,13 @@ export interface Api {
    * Re-create the thumbnail for a video
    */
   recreateThumbnail(videoId: string, config?: ReCreateThumbnailConfig): Picture;
+
+  /**
+   * Upload a thumbnail for a video
+   */
+  uploadThumbnail(
+    videoId: string,
+    fileName: string,
+    config?: UploadThumbnailConfig
+  ): Picture;
 }

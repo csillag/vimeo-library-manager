@@ -141,6 +141,10 @@ function addUpdateReplaceOptions(command: Command): Command {
       "--thumbnail-time-offset <seconds>",
       "Specify the time offset from where to take the thumbnail. (The default is from the middle of the video.)"
     )
+    .option(
+      "--thumbnail-file <image-file>",
+      "Use a custom image file as a thumbnail."
+    )
     .option("--open", "Open in browser");
 }
 
@@ -152,7 +156,7 @@ function describeVideo(video: VideoData) {
 function cli() {
   const program = new Command(APP_NAME);
 
-  program.version("0.0.11");
+  program.version("0.0.12");
   program
     .option(
       "-c, --config <config-file>",
@@ -284,10 +288,17 @@ function cli() {
       wrapAction((manager, args) => {
         const [videoFileName, opts] = args;
         const data = parseUpdateEditOptions(opts);
-        const { waitForEncoding, thumbnailTimeOffset, open, writeIdTo } = opts;
+        const {
+          waitForEncoding,
+          thumbnailTimeOffset,
+          thumbnailFile,
+          open,
+          writeIdTo,
+        } = opts;
         const video = manager.uploadVideo(videoFileName, data, {
           waitForEncoding,
           thumbnailTime: thumbnailTimeOffset,
+          thumbnailImageFile: thumbnailFile,
           openInBrowser: open,
           idFileName: writeIdTo,
         });
@@ -326,11 +337,13 @@ function cli() {
           recreateThumbnail,
           ignoreHash,
           thumbnailTimeOffset,
+          thumbnailFile,
         } = opts;
         manager.replaceVideoContent(videoId, videoFileName, {
           waitForEncoding,
           keepThumbnail: !recreateThumbnail,
           thumbnailTime: thumbnailTimeOffset,
+          thumbnailImageFile: thumbnailFile,
           openInBrowser: open,
           ignoreHash,
         });
@@ -345,9 +358,16 @@ function cli() {
         const [videoId] = args;
         const thumbnails = manager.getAllThumbnails(videoId);
         console.log(
-          "Thumbnails:",
-          JSON.stringify(thumbnails, null, "  "),
-          // thumbnails,
+          "Thumbnails for",
+          videoId,
+          "are:",
+          "\n",
+          thumbnails
+            .map(
+              (t) =>
+                " * " + t.uri + " " + t.type + (t.active ? " (active)" : "")
+            )
+            .join("\n"),
           "\n"
         );
       })
@@ -376,7 +396,7 @@ function cli() {
 
   program
     .command("recreate-thumbnail <video-id>")
-    .description("Re-create the thumbnail for the video")
+    .description("Re-create the thumbnail for a video")
     .option(
       "--time-offset <seconds>",
       "Specify the time offset from where to take the thumbnail. (The default is from the middle of the video.)"
@@ -387,6 +407,25 @@ function cli() {
         const [videoId, opts] = args;
         const { open: openInBrowser, timeOffset: time } = opts;
         manager.recreateThumbnail(videoId, { time, openInBrowser });
+      })
+    );
+
+  program
+    .command("upload-thumbnail <video-id> <image-file>")
+    .description("Upload a custom thumbnail for a video")
+    .option(
+      "--no-activate",
+      "Don't make the new thumbnail active. (You can do it later.)"
+    )
+    .option("--open", "Open in browser")
+    .action(
+      wrapAction((manager, args) => {
+        const [videoId, imageFileName, opts] = args;
+        const { activate, open } = opts;
+        manager.uploadThumbnail(videoId, imageFileName, {
+          active: activate,
+          openInBrowser: open,
+        });
       })
     );
 

@@ -26,6 +26,7 @@ import {
   SetupInfo,
   UpdateDataConfig,
   UploadConfig,
+  UploadThumbnailConfig,
 } from "./Api";
 import { AccessScope, VideoData } from "../vimeo-access";
 import {
@@ -37,7 +38,11 @@ import {
   sleep,
   slow,
 } from "./util";
-import { Picture, PictureSizeInfo } from "../vimeo-access/MoreTypes";
+import {
+  Picture,
+  PictureSizeInfo,
+  UploadPicture,
+} from "../vimeo-access/MoreTypes";
 
 interface Session {
   clientId: string;
@@ -61,6 +66,12 @@ export function selectLargestPicture(picture: Picture): PictureSizeInfo {
     picture.sizes[0]
   );
 }
+
+const contentTypes = {
+  png: "image/png",
+  jpg: "image/jpg",
+  gif: "image/gif",
+};
 
 export class ApiHandler implements Api {
   constructor(private readonly _managerConfig: ManagerConfig) {}
@@ -425,6 +436,7 @@ export class ApiHandler implements Api {
     const {
       waitForEncoding,
       thumbnailTime,
+      thumbnailImageFile,
       openInBrowser,
       idFileName,
     } = config;
@@ -471,11 +483,28 @@ export class ApiHandler implements Api {
       });
     }
 
+    let wantedThumbnail: Picture | undefined;
+
     /**
      * If we were passed a time, create a thumbnail from that spot
      */
     if (thumbnailTime !== undefined) {
-      this.recreateThumbnail(videoId, { time: thumbnailTime });
+      wantedThumbnail = this.recreateThumbnail(videoId, {
+        time: thumbnailTime,
+      });
+    }
+
+    /**
+     * If we were passed a thumbnail image file, upload that, too
+     */
+    if (thumbnailImageFile) {
+      wantedThumbnail = this.uploadThumbnail(videoId, thumbnailImageFile, {
+        active: true,
+      });
+    }
+
+    if (wantedThumbnail) {
+      console.log("Wanted thumbnail is", wantedThumbnail.uri);
     }
 
     let video: VideoData;
@@ -515,6 +544,7 @@ export class ApiHandler implements Api {
       openInBrowser,
       keepThumbnail,
       thumbnailTime,
+      thumbnailImageFile,
       ignoreHash,
     } = config;
 
@@ -552,7 +582,7 @@ export class ApiHandler implements Api {
       });
     });
 
-    if (waitForEncoding || !keepThumbnail) {
+    if (waitForEncoding || (!keepThumbnail && !thumbnailImageFile)) {
       slow("waiting for encoding", (control) => {
         control.setText("waiting for encoding to start...");
         this._vimeo.waitForEncodingToStart(videoId);
@@ -562,10 +592,25 @@ export class ApiHandler implements Api {
     }
 
     if (!keepThumbnail) {
-      slow("waiting for the video to be ready for thumbnail generation", () => {
-        sleep(30 * 1000); // TODO: what out what is a safe value here
-      });
-      this.recreateThumbnail(videoId, { time: thumbnailTime });
+      /**
+       * If we were passed a thumbnail image file, upload that, too
+       */
+      if (thumbnailImageFile) {
+        this.uploadThumbnail(videoId, thumbnailImageFile, {
+          active: true,
+        });
+      } else {
+        /**
+         * We will generate a thumbnail from the image
+         */
+        slow(
+          "waiting for the video to be ready for thumbnail generation",
+          () => {
+            sleep(30 * 1000); // TODO: what out what is a safe value here
+          }
+        );
+        this.recreateThumbnail(videoId, { time: thumbnailTime });
+      }
     }
 
     slow("checking end result", () => {
@@ -649,5 +694,62 @@ export class ApiHandler implements Api {
       active: true,
       openInBrowser,
     });
+  }
+
+  uploadThumbnail(
+    videoId: string,
+    fileName: string,
+    config: UploadThumbnailConfig = {}
+  ): Picture {
+    this._log("Uploading new thumbnail for", videoId);
+    const { active, openInBrowser } = config;
+    this._log("(Activate: ", active, "; open: ", openInBrowser, ")");
+    const video = this.getVideo(videoId);
+    const picturesUri = video.metadata.connections.pictures.uri;
+    this._log("Pictures URI is", picturesUri);
+
+    // Load the data
+    const data = fs.readFileSync(fileName);
+    this._log("Read", data.length, "bytes from", fileName);
+    const extension = path.extname(fileName).toLowerCase().substr(1);
+    const contentType = (contentTypes as any)[extension];
+    if (!contentType) {
+      throw new Error(
+        "Unknown image extension '" +
+          extension +
+          "'. Please stick to " +
+          Object.keys(contentTypes).join(", ")
+      );
+    }
+
+    // Request a new upload
+    let uploadPicture: UploadPicture;
+    slow("Requesting a new thumbnail upload", () => {
+      uploadPicture = this._vimeo.initiateThumbnailUpload(picturesUri);
+    });
+
+    const { uri: pictureUri, link: uploadLink } = uploadPicture!;
+    this._log("Created new thumbnail picture", pictureUri);
+    this._log("Upload link is", uploadLink);
+
+    // Execute the upload
+    slow("uploading image", () => {
+      this._vimeo.uploadThumbnail(uploadLink, contentType, data);
+    });
+    this._log("Image uploaded.");
+
+    // Set the image to active
+    if (active) {
+      slow("activating new thumbnail", () => {
+        this._vimeo.setThumbnailActive(uploadPicture.uri, true);
+      });
+    }
+
+    // Open in browser
+    if (openInBrowser) {
+      this.openVideo(videoId);
+    }
+
+    return uploadPicture!;
   }
 }

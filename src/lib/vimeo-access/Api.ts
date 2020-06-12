@@ -5,7 +5,7 @@ import {
   UploadSuccessCallback,
   VideoUpdateData,
 } from "./Types";
-import { Picture, VideoData } from "./MoreTypes";
+import { Picture, UploadPicture, VideoData } from "./MoreTypes";
 
 export interface Api {
   /**
@@ -90,11 +90,41 @@ export interface Api {
   deleteThumbnail(videoId: string, pictureId: string): Promise<void>;
 
   /**
-   * Create a new thumbnail for a video
+   * Create a new thumbnail for a video (by taking a frame from the video)
    */
   createThumbnail(
     videoId: string,
     time: number,
     active?: boolean
   ): Promise<Picture>;
+
+  /**
+   * Initiate uploading a thumbnail.
+   *
+   * It will return you an upload URL.
+   * This is the 2nd step of the process.
+   *
+   * See https://developer.vimeo.com/api/upload/thumbnails for the detailed description.
+   */
+  initiateThumbnailUpload(picturesUri: string): Promise<UploadPicture>;
+
+  /**
+   * Upload a new custom thumbnail.
+   *
+   * This is the 3rd step of the process.
+   *
+   * See https://developer.vimeo.com/api/upload/thumbnails for the detailed description.
+   */
+  uploadThumbnail(
+    uploadUri: string,
+    contentType: string,
+    data: Buffer
+  ): Promise<void>;
+
+  /**
+   * Activate/deactivate a thumbnail.
+   *
+   * If you set "value" to false, then we will deactivate it instead.
+   */
+  setThumbnailActive(uri: string, active: boolean): Promise<void>;
 }

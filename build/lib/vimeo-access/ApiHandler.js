@@ -9,6 +9,9 @@ var __spreadArrays = (this && this.__spreadArrays) || function () {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ApiHandler = void 0;
 var vimeo_1 = require("vimeo");
+// const request = require("request");
+// import { Response } from "request";
+var axios = require("axios").default;
 var wantedScopes = [
     "public",
     "create",
@@ -320,6 +323,85 @@ var ApiHandler = /** @class */ (function () {
                             break;
                         default:
                             throw new Error("Couldn't create thumbnail: " + body);
+                    }
+                }
+            });
+        });
+    };
+    ApiHandler.prototype.initiateThumbnailUpload = function (picturesUri) {
+        var _this = this;
+        return new Promise(function (resolve, reject) {
+            _this._client.request({
+                method: "POST",
+                path: picturesUri,
+            }, function (error, body, statusCode, _headers) {
+                if (error) {
+                    reject(convertError(error));
+                }
+                else {
+                    switch (statusCode) {
+                        case 201:
+                            resolve(body);
+                            break;
+                        default:
+                            throw new Error("Couldn't initiate thumbnail uploading: " + body);
+                    }
+                }
+            });
+        });
+    };
+    ApiHandler.prototype.uploadThumbnail = function (uploadUri, contentType, data) {
+        var _this = this;
+        return new Promise(function (resolve, reject) {
+            var headers = {
+                "Content-Type": contentType,
+                Accept: "application/vnd.vimeo.*+json;version=3.4",
+            };
+            _this.log("Starting image upload to", uploadUri);
+            axios({
+                method: "put",
+                url: uploadUri,
+                headers: headers,
+                data: data,
+            }).then(function (result) {
+                var status = result.status, statusText = result.statusText, data = result.data;
+                if (status === 200) {
+                    resolve();
+                }
+                else {
+                    reject(new Error("Failed to upload thumbnail: " + statusText + "; " + data));
+                }
+            }, function (error) {
+                reject(new Error("Failed to upload thumbnail: " + error.toString()));
+            });
+        });
+    };
+    ApiHandler.prototype.setThumbnailActive = function (thumbnailUri, active) {
+        var _this = this;
+        return new Promise(function (resolve, reject) {
+            var req = {
+                method: "PATCH",
+                path: thumbnailUri,
+                query: { active: active },
+                headers: { "Content-Type": "application/json" },
+            };
+            _this.log("Sending", req);
+            _this._client.request(req, function (error, _body, statusCode, _headers) {
+                if (error) {
+                    reject(convertError(error));
+                }
+                else {
+                    switch (statusCode) {
+                        case 200:
+                            resolve();
+                            break;
+                        case 400:
+                            reject(new Error("A parameter is invalid."));
+                            break;
+                        case 402:
+                            reject(new Error("You are not allowed to do this!"));
+                        default:
+                            reject(new Error("Something went wrong."));
                     }
                 }
             });

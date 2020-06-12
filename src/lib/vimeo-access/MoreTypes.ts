@@ -157,6 +157,13 @@ export interface Picture {
   sizes: PictureSizeInfo[];
 }
 
+export interface UploadPicture extends Picture {
+  /**
+   * The upload URL for this new picture
+   */
+  link: string;
+}
+
 /**
  * A collection of stats associated with a video.
  */

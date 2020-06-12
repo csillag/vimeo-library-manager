@@ -25,7 +25,8 @@ I think we can agree that this is not what we want.
 
 ## Supported operations
 
-Not a lot ATM, since I just started writing this tool.
+Basically, it supports uploading, replacing and ediging videos.
+
 
 ```
 Usage: vimeo-library-manager [options] [command]
@@ -49,7 +50,8 @@ Commands:
   replace-content [options] <video-id> <video-file-name>  Replace video content
   list-thumbnails <video-id>                              List the thumbnails for a video
   create-thumbnail [options] <video-id>                   Create a new thumbnail for the video
-  recreate-thumbnail [options] <video-id>                 Re-create the thumbnail for the video
+  recreate-thumbnail [options] <video-id>                 Re-create the thumbnail for a video
+  upload-thumbnail [options] <video-id> <image-file>      Upload a custom thumbnail for a video
   help [command]                                          display help for command
 ```
 
@@ -58,6 +60,8 @@ Commands:
 You can upload a video, set metadata, and optionally display the result in a browser.
 
 ```
+[vimeo-library-manager]
+
 Usage: vimeo-library-manager upload-video [options] <video-file>
 
 Upload a new video
@@ -70,7 +74,10 @@ Options:
   --set-custom-file <JSON-data-file>         Set custom JSON data from a file
   --set-privacy <policy>                     Set privacy policy
   --set-password <password>                  Set the password
-  --wait-for-encoding                        Wait until then video encoding finishes
+  --wait-for-encoding                        Wait until the video encoding finishes
+  --thumbnail-time-offset <seconds>          Specify the time offset from where to take the thumbnail. (The default is
+                                             from the middle of the video.)
+  --thumbnail-file <image-file>              Use a custom image file as a thumbnail.
   --open                                     Open in browser
   --write-id-to <id-file>                    Write the ID of the new video to a file
   -h, --help                                 display help for command
@@ -116,16 +123,20 @@ vimeo-library-manager update-data 425342398 --set-password "magic"
 
 
 ```
+
 Usage: vimeo-library-manager replace-content [options] <video-id> <video-file-name>
 
 Replace video content
 
 Options:
-  --wait-for-encoding      Wait until the video encoding finishes
-  --open                   Open in browser
-  --no-recreate-thumbnail  Don't recreate the thumbnail
-  --ignore-hash            Ignore the results of the hash comparison, upload anyway
-  --thumbnail-time-offset  Specify the time offset from where to take the thumbnail. (The default is from the middle
-                           of the video.)
-  -h, --help               display help for command
+  --wait-for-encoding                Wait until the video encoding finishes
+  --thumbnail-time-offset <seconds>  Specify the time offset from where to take the thumbnail. (The default is from
+                                     the middle of the video.)
+  --thumbnail-file <image-file>      Use a custom image file as a thumbnail.
+  --open                             Open in browser
+  --no-recreate-thumbnail            Don't recreate the thumbnail
+  --ignore-hash                      Ignore the results of the hash comparison, upload anyway
+  -h, --help                         display help for command
+
 ```
+

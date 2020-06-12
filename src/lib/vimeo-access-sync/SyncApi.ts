@@ -4,7 +4,7 @@ import {
   VideoData,
   VideoUpdateData,
 } from "../vimeo-access";
-import { Picture } from "../vimeo-access/MoreTypes";
+import { Picture, UploadPicture } from "../vimeo-access/MoreTypes";
 
 export interface SyncApi {
   /**
@@ -83,7 +83,31 @@ export interface SyncApi {
   deleteThumbnail(videoId: string, pictureId: string): void;
 
   /**
-   * Create a new thumbnail for a video
+   * Create a new thumbnail for a video (by taking a frame from the video)
    */
   createThumbnail(videoId: string, time: number, active?: boolean): Picture;
+
+  /**
+   * Initiate uploading a thumbnail.
+   *
+   * It will return you an upload URL.
+   * This is the 2nd step of the process.
+   *
+   * See https://developer.vimeo.com/api/upload/thumbnails for the detailed description.
+   */
+  initiateThumbnailUpload(picturesUri: string): UploadPicture;
+
+  /**
+   * Upload a new custom thumbnail.
+   *
+   * This is the 3rd step of the process.
+   *
+   * See https://developer.vimeo.com/api/upload/thumbnails for the detailed description.
+   */
+  uploadThumbnail(uploadUri: string, contentType: string, data: Buffer): void;
+
+  /**
+   * Activate/deactivate a thumbnail.
+   */
+  setThumbnailActive(uri: string, active: boolean): void;
 }

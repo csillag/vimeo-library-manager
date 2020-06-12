@@ -16,7 +16,7 @@ import {
   VideoData,
   VideoUpdateData,
 } from "../vimeo-access";
-import { Picture } from "../vimeo-access/MoreTypes";
+import { Picture, UploadPicture } from "../vimeo-access/MoreTypes";
 
 export class SyncApiHandler implements SyncApi {
   private readonly _vimeoAsync: Api;
@@ -47,6 +47,14 @@ export class SyncApiHandler implements SyncApi {
     time: number,
     active?: boolean
   ) => Picture;
+
+  readonly initiateThumbnailUpload: (picturesUri: string) => UploadPicture;
+  readonly uploadThumbnail: (
+    uploadUri: string,
+    contentType: string,
+    data: Buffer
+  ) => void;
+  readonly setThumbnailActive: (uri: string, active: boolean) => void;
 
   _uploadVideoPromise(
     videoFileName: string,
@@ -138,6 +146,18 @@ export class SyncApiHandler implements SyncApi {
     this.createThumbnail = wrapPromiseAsync3m<string, number, boolean, Picture>(
       this._vimeoAsync.createThumbnail,
       false,
+      this._vimeoAsync
+    );
+    this.initiateThumbnailUpload = wrapPromiseAsync1(
+      this._vimeoAsync.initiateThumbnailUpload,
+      this._vimeoAsync
+    );
+    this.uploadThumbnail = wrapPromiseAsync3(
+      this._vimeoAsync.uploadThumbnail,
+      this._vimeoAsync
+    );
+    this.setThumbnailActive = wrapPromiseAsync2(
+      this._vimeoAsync.setThumbnailActive,
       this._vimeoAsync
     );
   }
