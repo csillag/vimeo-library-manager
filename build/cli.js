@@ -126,7 +126,7 @@ function describeVideo(video) {
 }
 function cli() {
     var program = new commander_1.Command(APP_NAME);
-    program.version("0.0.12");
+    program.version("0.0.13");
     program
         .option("-c, --config <config-file>", "path to config file"
     // process.env.HOME + "/.vimeo-library-manager/config.json"

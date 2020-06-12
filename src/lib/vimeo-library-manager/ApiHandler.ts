@@ -568,17 +568,17 @@ export class ApiHandler implements Api {
       }
     }
 
-    slow("updating meta-data", () => {
-      this._vimeo.editVideo(videoId, {
-        embed: { logos: { custom: { link: newHash! } } },
-      });
-    });
-
     slow("uploading video file", (control) => {
       this._vimeo.replaceVideo(videoId, videoFileName, (uploaded, total) => {
         control.setText(
           "Uploaded " + Math.round((100 * uploaded) / total) + "%"
         );
+      });
+    });
+
+    slow("updating meta-data", () => {
+      this._vimeo.editVideo(videoId, {
+        embed: { logos: { custom: { link: newHash! } } },
       });
     });
 

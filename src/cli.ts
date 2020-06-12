@@ -156,7 +156,7 @@ function describeVideo(video: VideoData) {
 function cli() {
   const program = new Command(APP_NAME);
 
-  program.version("0.0.12");
+  program.version("0.0.13");
   program
     .option(
       "-c, --config <config-file>",

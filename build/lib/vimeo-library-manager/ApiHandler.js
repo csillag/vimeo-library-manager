@@ -397,14 +397,14 @@ var ApiHandler = /** @class */ (function () {
                 return video;
             }
         }
-        util_1.slow("updating meta-data", function () {
-            _this._vimeo.editVideo(videoId, {
-                embed: { logos: { custom: { link: newHash } } },
-            });
-        });
         util_1.slow("uploading video file", function (control) {
             _this._vimeo.replaceVideo(videoId, videoFileName, function (uploaded, total) {
                 control.setText("Uploaded " + Math.round((100 * uploaded) / total) + "%");
+            });
+        });
+        util_1.slow("updating meta-data", function () {
+            _this._vimeo.editVideo(videoId, {
+                embed: { logos: { custom: { link: newHash } } },
             });
         });
         if (waitForEncoding || (!keepThumbnail && !thumbnailImageFile)) {
