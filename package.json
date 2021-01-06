@@ -19,7 +19,7 @@
     "typescript": "3.9.3"
   },
   "dependencies": {
-    "axios": "0.19.2",
+    "axios": "0.21.1",
     "commander": "5.1.0",
     "connect": "3.7.0",
     "fibers": "5.0.0",
