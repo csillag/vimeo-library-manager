@@ -201,6 +201,20 @@ function cli() {
         }
     }));
     program
+        .command("get-showcase <showcase-id>")
+        .description("Get info about one of my showcases")
+        .option("--url-only", "Only show the URL for each video")
+        .action(wrapAction(function (manager, _a) {
+        var showcaseId = _a[0], urlOnly = _a[1].urlOnly;
+        var result = manager.getShowcase(showcaseId);
+        var name = result.name, link = result.link, videos = result.videos;
+        console.log("Found showcase", '"' + name + '"', "at", link);
+        console.log();
+        console.log("Found", videos.length, "videos:");
+        console.log();
+        videos.forEach(urlOnly ? function (v) { return console.log(v.link); } : describeVideo);
+    }));
+    program
         .command("open-video <video-id>")
         .description("Open a video in a browser")
         .action(wrapAction(function (manager, args) {

@@ -8,6 +8,7 @@ import {
   UploadProgressCallback,
   UploadSuccessCallback,
   VideoUpdateData,
+  Showcase,
 } from "./Types";
 import { RequestOptions, Vimeo } from "vimeo";
 import { Picture, UploadPicture, VideoData } from "./MoreTypes";
@@ -469,11 +470,78 @@ export class ApiHandler implements Api {
               break;
             case 402:
               reject(new Error("You are not allowed to do this!"));
+              break;
             default:
               reject(new Error("Something went wrong."));
           }
         }
       });
+    });
+  }
+
+  getShowcase(showcaseId: string): Promise<Showcase> {
+    return new Promise<Showcase>((resolve, reject) => {
+      this._client.request(
+        {
+          method: "GET",
+          path: "/me/albums/" + showcaseId,
+        },
+        (error: any, body, statusCode) => {
+          if (error) {
+            reject(convertError(error));
+          } else {
+            switch (statusCode) {
+              case 200:
+                resolve(body);
+                break;
+              case 404:
+                reject(new Error("Showcase not found."));
+                break;
+              default:
+                reject(new Error("Something went wrong."));
+            }
+          }
+        }
+      );
+    });
+  }
+
+  getVideosInShowcase(
+    showcaseId: string,
+    wantedPage = 1,
+    loaded: VideoData[] = []
+  ): Promise<VideoData[]> {
+    return new Promise<VideoData[]>((resolve, reject) => {
+      const path = "/me/albums/" + showcaseId + "/videos?page=" + wantedPage;
+      this._client.request(
+        {
+          method: "GET",
+          path,
+        },
+        (error: any, body, _statusCode, _headers) => {
+          if (error) {
+            reject(convertError(error));
+          } else {
+            const { total, page: currentPage, per_page, data } = body;
+            if (currentPage !== wantedPage) {
+              reject(new Error("I don't understand what is going on here."));
+              return;
+            }
+            const totalPages = Math.ceil(total / per_page);
+            const isLast = totalPages <= currentPage;
+            const upToNow = [...loaded, ...data]; // Unite the already loaded and the new data
+            if (isLast) {
+              resolve(upToNow);
+            } else {
+              this.getVideosInShowcase(
+                showcaseId,
+                wantedPage + 1,
+                upToNow
+              ).then(resolve, reject);
+            }
+          }
+        }
+      );
     });
   }
 }

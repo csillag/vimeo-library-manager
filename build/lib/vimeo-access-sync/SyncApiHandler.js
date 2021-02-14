@@ -26,6 +26,8 @@ var SyncApiHandler = /** @class */ (function () {
         this.initiateThumbnailUpload = fiber_async_function_wrappers_1.wrapPromiseAsync1(this._vimeoAsync.initiateThumbnailUpload, this._vimeoAsync);
         this.uploadThumbnail = fiber_async_function_wrappers_1.wrapPromiseAsync3(this._vimeoAsync.uploadThumbnail, this._vimeoAsync);
         this.setThumbnailActive = fiber_async_function_wrappers_1.wrapPromiseAsync2(this._vimeoAsync.setThumbnailActive, this._vimeoAsync);
+        this.getShowcase = fiber_async_function_wrappers_1.wrapPromiseAsync1(this._vimeoAsync.getShowcase, this._vimeoAsync);
+        this.getVideosInShowcase = fiber_async_function_wrappers_1.wrapPromiseAsync1(this._vimeoAsync.getVideosInShowcase, this._vimeoAsync);
     }
     SyncApiHandler.prototype._uploadVideoPromise = function (videoFileName, data, onProgress) {
         var _this = this;

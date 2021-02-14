@@ -12,6 +12,7 @@ import Fiber = require("fibers");
 
 import {
   LoginInfo,
+  Showcase,
   SyncApi,
   SyncApiHandler,
   VideoUpdateData,
@@ -24,6 +25,7 @@ import {
   ReCreateThumbnailConfig,
   ReplaceConfig,
   SetupInfo,
+  ShowcaseInfo,
   UpdateDataConfig,
   UploadConfig,
   UploadThumbnailConfig,
@@ -751,5 +753,21 @@ export class ApiHandler implements Api {
     }
 
     return uploadPicture!;
+  }
+
+  getShowcase(showcaseId: string): ShowcaseInfo {
+    let showcase: Showcase;
+    slow("getting data about the showcase itself", () => {
+      showcase = this._vimeo.getShowcase(showcaseId);
+    });
+    let videos: VideoData[];
+    slow("getting the list of videos", () => {
+      videos = this._vimeo.getVideosInShowcase(showcaseId);
+    });
+
+    return {
+      ...showcase!,
+      videos: videos!,
+    };
   }
 }

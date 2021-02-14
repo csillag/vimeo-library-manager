@@ -400,8 +400,66 @@ var ApiHandler = /** @class */ (function () {
                             break;
                         case 402:
                             reject(new Error("You are not allowed to do this!"));
+                            break;
                         default:
                             reject(new Error("Something went wrong."));
+                    }
+                }
+            });
+        });
+    };
+    ApiHandler.prototype.getShowcase = function (showcaseId) {
+        var _this = this;
+        return new Promise(function (resolve, reject) {
+            _this._client.request({
+                method: "GET",
+                path: "/me/albums/" + showcaseId,
+            }, function (error, body, statusCode) {
+                if (error) {
+                    reject(convertError(error));
+                }
+                else {
+                    switch (statusCode) {
+                        case 200:
+                            resolve(body);
+                            break;
+                        case 404:
+                            reject(new Error("Showcase not found."));
+                            break;
+                        default:
+                            reject(new Error("Something went wrong."));
+                    }
+                }
+            });
+        });
+    };
+    ApiHandler.prototype.getVideosInShowcase = function (showcaseId, wantedPage, loaded) {
+        var _this = this;
+        if (wantedPage === void 0) { wantedPage = 1; }
+        if (loaded === void 0) { loaded = []; }
+        return new Promise(function (resolve, reject) {
+            var path = "/me/albums/" + showcaseId + "/videos?page=" + wantedPage;
+            _this._client.request({
+                method: "GET",
+                path: path,
+            }, function (error, body, _statusCode, _headers) {
+                if (error) {
+                    reject(convertError(error));
+                }
+                else {
+                    var total = body.total, currentPage = body.page, per_page = body.per_page, data = body.data;
+                    if (currentPage !== wantedPage) {
+                        reject(new Error("I don't understand what is going on here."));
+                        return;
+                    }
+                    var totalPages = Math.ceil(total / per_page);
+                    var isLast = totalPages <= currentPage;
+                    var upToNow = __spreadArrays(loaded, data); // Unite the already loaded and the new data
+                    if (isLast) {
+                        resolve(upToNow);
+                    }
+                    else {
+                        _this.getVideosInShowcase(showcaseId, wantedPage + 1, upToNow).then(resolve, reject);
                     }
                 }
             });

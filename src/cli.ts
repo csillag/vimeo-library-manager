@@ -252,6 +252,22 @@ function cli() {
     );
 
   program
+    .command("get-showcase <showcase-id>")
+    .description("Get info about one of my showcases")
+    .option("--url-only", "Only show the URL for each video")
+    .action(
+      wrapAction((manager, [showcaseId, { urlOnly }]) => {
+        const result = manager.getShowcase(showcaseId);
+        const { name, link, videos } = result;
+        console.log("Found showcase", '"' + name + '"', "at", link);
+        console.log();
+        console.log("Found", videos.length, "videos:");
+        console.log();
+        videos.forEach(urlOnly ? (v) => console.log(v.link) : describeVideo);
+      })
+    );
+
+  program
     .command("open-video <video-id>")
     .description("Open a video in a browser")
     .action(

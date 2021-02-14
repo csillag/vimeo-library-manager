@@ -169,3 +169,15 @@ export type UploadProgressCallback = (
   bytesTotal: number
 ) => void;
 export type UploadFailCallback = (error: string) => void;
+
+export interface Showcase {
+  /**
+   * The name of the showcase
+   */
+  name: string;
+
+  /**
+   * The link pointing to the showcase
+   */
+  link: string;
+}

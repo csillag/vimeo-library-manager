@@ -1,4 +1,4 @@
-import { VideoData, VideoUpdateData } from "../vimeo-access";
+import { Showcase, VideoData, VideoUpdateData } from "../vimeo-access";
 import { Picture } from "../vimeo-access/MoreTypes";
 
 export type LogLevel = "SILENT" | "ERROR" | "NORMAL" | "DEBUG";
@@ -164,6 +164,10 @@ export interface UploadThumbnailConfig {
   openInBrowser?: boolean;
 }
 
+export interface ShowcaseInfo extends Showcase {
+  videos: VideoData[];
+}
+
 export interface Api {
   /**
    * Set up your Vimeo session.
@@ -285,4 +289,9 @@ export interface Api {
     fileName: string,
     config?: UploadThumbnailConfig
   ): Picture;
+
+  /**
+   * Get info about a showcase
+   */
+  getShowcase(showcaseId: string): ShowcaseInfo;
 }

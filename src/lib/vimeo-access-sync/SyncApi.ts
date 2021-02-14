@@ -1,5 +1,6 @@
 import {
   LoginInfo,
+  Showcase,
   UploadProgressCallback,
   VideoData,
   VideoUpdateData,
@@ -110,4 +111,14 @@ export interface SyncApi {
    * Activate/deactivate a thumbnail.
    */
   setThumbnailActive(uri: string, active: boolean): void;
+
+  /**
+   * Get info about a showcase
+   */
+  getShowcase(showcaseId: string): Showcase;
+
+  /**
+   * Get videos belonging to a showcase
+   */
+  getVideosInShowcase(showcaseId: string): VideoData[];
 }

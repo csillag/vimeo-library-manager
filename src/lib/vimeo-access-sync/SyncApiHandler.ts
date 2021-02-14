@@ -12,6 +12,7 @@ import {
   AuthInfo,
   ClientParams,
   LoginInfo,
+  Showcase,
   UploadProgressCallback,
   VideoData,
   VideoUpdateData,
@@ -55,6 +56,8 @@ export class SyncApiHandler implements SyncApi {
     data: Buffer
   ) => void;
   readonly setThumbnailActive: (uri: string, active: boolean) => void;
+  readonly getShowcase: (showcaseId: string) => Showcase;
+  readonly getVideosInShowcase: (showcaseId: string) => VideoData[];
 
   _uploadVideoPromise(
     videoFileName: string,
@@ -158,6 +161,14 @@ export class SyncApiHandler implements SyncApi {
     );
     this.setThumbnailActive = wrapPromiseAsync2(
       this._vimeoAsync.setThumbnailActive,
+      this._vimeoAsync
+    );
+    this.getShowcase = wrapPromiseAsync1(
+      this._vimeoAsync.getShowcase,
+      this._vimeoAsync
+    );
+    this.getVideosInShowcase = wrapPromiseAsync1(
+      this._vimeoAsync.getVideosInShowcase,
       this._vimeoAsync
     );
   }

@@ -1,5 +1,6 @@
 import {
   LoginInfo,
+  Showcase,
   UploadFailCallback,
   UploadProgressCallback,
   UploadSuccessCallback,
@@ -127,4 +128,14 @@ export interface Api {
    * If you set "value" to false, then we will deactivate it instead.
    */
   setThumbnailActive(uri: string, active: boolean): Promise<void>;
+
+  /**
+   * Get info about a showcase
+   */
+  getShowcase(showcaseId: string): Promise<Showcase>;
+
+  /**
+   * Get videos belonging to a showcase
+   */
+  getVideosInShowcase(showcaseId: string): Promise<VideoData[]>;
 }
