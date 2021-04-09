@@ -45,6 +45,7 @@ function addUpdateEditOptions(command: Command): Command {
       "--set-description-file <description-file>",
       "Load description from a file"
     )
+    .option("--set-color <color>", "Set color")
     .option("--set-custom <JSON-data>", "Set custom JSON data")
     .option(
       "--set-custom-file <JSON-data-file>",
@@ -66,6 +67,7 @@ function parseUpdateEditOptions(options: any): VideoUpdateData {
     setCustomFile,
     setPrivacy,
     setPassword,
+    setColor,
   } = options;
 
   let data: VideoUpdateData = {};
@@ -118,6 +120,9 @@ function parseUpdateEditOptions(options: any): VideoUpdateData {
   }
   if (setDescription !== undefined) {
     data.description = setDescription;
+  }
+  if (setColor !== undefined) {
+    data.embed.color = setColor;
   }
   if (setPrivacy !== undefined) {
     mergeInto(data, { privacy: { view: setPrivacy } });
@@ -248,6 +253,17 @@ function cli() {
           console.log();
           results.forEach(describeVideo);
         }
+      })
+    );
+
+  program
+    .command("show-details <video-id>")
+    .description("Show details about a video")
+    .action(
+      wrapAction((manager, args) => {
+        const [videoId] = args;
+        const video = manager.getVideo(videoId);
+        console.log(video);
       })
     );
 
