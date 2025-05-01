@@ -1,9 +1,7 @@
 import {
   LoginInfo,
   Showcase,
-  UploadFailCallback,
   UploadProgressCallback,
-  UploadSuccessCallback,
   VideoUpdateData,
 } from "./Types";
 import { Picture, UploadPicture, VideoData } from "./MoreTypes";
@@ -11,8 +9,6 @@ import { Picture, UploadPicture, VideoData } from "./MoreTypes";
 export interface Api {
   /**
    * Get a login URL
-   *
-   * @param redirectUrl configured for the app
    */
   getLoginUrl(stateToken: string): string;
 
@@ -49,10 +45,8 @@ export interface Api {
   uploadVideo(
     videoFileName: string,
     data: VideoUpdateData,
-    onSuccess: UploadSuccessCallback,
     onProgress: UploadProgressCallback,
-    onFail: UploadFailCallback
-  ): void;
+  ): Promise<string>;
 
   /**
    * Wait for encoding to start on a video
@@ -75,10 +69,8 @@ export interface Api {
   replaceVideo(
     videoId: string,
     videoFileName: string,
-    onSuccess: UploadSuccessCallback,
     onProgress: UploadProgressCallback,
-    onFail: UploadFailCallback
-  ): void;
+  ): Promise<string>;
 
   /**
    * Get all the thumbnails for a video

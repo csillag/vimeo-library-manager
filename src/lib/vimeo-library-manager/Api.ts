@@ -96,7 +96,7 @@ export interface ReplaceConfig {
   /**
    * Don't compare the hash, just do the upload
    *
-   * Normally we don't went to re-upload the same content, so we check
+   * Normally we don't want to re-upload the same content, so we check
    * the hash of the video file with the value saved to the metadata.
    * Specify this flag do ignore the comparison and just force the upload.
    */
@@ -133,9 +133,9 @@ export interface ReplaceConfig {
 
 export interface ReCreateThumbnailConfig {
   /**
-   * From which point of the video should we create the thumbnain?
+   * From which point of the video should we create the thumbnail?
    *
-   * If not specified, we will just take it fro the middle.
+   * If not specified, we will just take it from the middle.
    */
   time?: number;
 
@@ -194,7 +194,7 @@ export interface Api {
    * redirect, etc. But if you don't want to use that process, then this is where you can pass in
    * your login redirect tokens.
    */
-  finishLogin(stateToken: string, codeToken: string): void;
+  finishLogin(stateToken: string, codeToken: string): Promise<void>;
 
   /**
    * Log out from Vimeo
@@ -207,17 +207,17 @@ export interface Api {
    * Verify that Vimeo access is working normally.
    * If not, you will get an exception.
    */
-  checkLoginStatus(): void;
+  checkLoginStatus(): Promise<void>;
 
   /**
    * Get a list of all my videos
    */
-  getMyVideos(): VideoData[];
+  getMyVideos(): Promise<VideoData[]>;
 
   /**
    * Get info about a specific video
    */
-  getVideo(videoId: string): VideoData;
+  getVideo(videoId: string): Promise<VideoData>;
 
   /**
    * Update info about a video
@@ -226,7 +226,7 @@ export interface Api {
     videoId: string,
     data: VideoUpdateData,
     config?: UpdateDataConfig
-  ): VideoData;
+  ): Promise<VideoData>;
 
   /**
    * Upload a new video
@@ -235,12 +235,12 @@ export interface Api {
     videoFileName: string,
     data: VideoUpdateData,
     config: UploadConfig
-  ): VideoData;
+  ): Promise<VideoData>;
 
   /**
    * Delete a video
    */
-  deleteVideo(videoId: string): void;
+  deleteVideo(videoId: string): Promise<void>;
 
   /**
    * Replace the content of a video
@@ -249,37 +249,37 @@ export interface Api {
     videoId: string,
     videoFileName: string,
     config: ReplaceConfig
-  ): VideoData;
+  ): Promise<VideoData>;
 
   /**
    * Open a video in browser
    */
-  openVideo(videoId: string): void;
+  openVideo(videoId: string): Promise<void>;
 
   /**
    * Get all the thumbnails for a video
    */
-  getAllThumbnails(videoId: string): Picture[];
+  getAllThumbnails(videoId: string): Promise<Picture[]>;
 
   /**
    * Delete a thumbnail
    */
-  deleteThumbnail(videoId: string, pictureId: string): void;
+  deleteThumbnail(videoId: string, pictureId: string): Promise<void>;
 
   /**
-   * Delete all thumpnails for a video
+   * Delete all thumbnails for a video
    */
-  deleteThumbnails(videoId: string): void;
+  deleteThumbnails(videoId: string): Promise<void>;
 
   /**
    * Create a new thumbnail for a video
    */
-  createThumbnail(videoId: string, config?: CreateThumbnailConfig): Picture;
+  createThumbnail(videoId: string, config?: CreateThumbnailConfig): Promise<Picture>;
 
   /**
    * Re-create the thumbnail for a video
    */
-  recreateThumbnail(videoId: string, config?: ReCreateThumbnailConfig): Picture;
+  recreateThumbnail(videoId: string, config?: ReCreateThumbnailConfig): Promise<Picture>;
 
   /**
    * Upload a thumbnail for a video
@@ -288,10 +288,10 @@ export interface Api {
     videoId: string,
     fileName: string,
     config?: UploadThumbnailConfig
-  ): Picture;
+  ): Promise<Picture>;
 
   /**
    * Get info about a showcase
    */
-  getShowcase(showcaseId: string): ShowcaseInfo;
+  getShowcase(showcaseId: string): Promise<ShowcaseInfo>;
 }

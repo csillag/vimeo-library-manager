@@ -1,22 +1,21 @@
 import { IncomingMessage, ServerResponse } from "http";
 
-const lodashGet = require("lodash.get");
-const fs = require("fs");
-const path = require("path");
-const shortId = require("shortid");
-const open = require("open");
-const connect = require("connect");
-const http = require("http");
-const URI = require("uri-js");
-import Fiber = require("fibers");
+import lodashGet from "lodash/get";
+import fs = require("fs");
+import path = require("path");
+import shortId from "shortid";
+import open = require("open");
+import connect = require("connect");
+import http = require("http");
+import URI = require("uri-js");
 
 import {
   LoginInfo,
   Showcase,
-  SyncApi,
-  SyncApiHandler,
+  Api as VimeoApi,
+  ApiHandler as VimeoApiHandler,
   VideoUpdateData,
-} from "../vimeo-access-sync";
+} from "../vimeo-access";
 import {
   Api,
   CreateThumbnailConfig,
@@ -32,7 +31,7 @@ import {
 } from "./Api";
 import { AccessScope, VideoData } from "../vimeo-access";
 import {
-  getHashSync,
+  getHash,
   getKeys,
   mergeInto,
   parseQuery,
@@ -156,7 +155,7 @@ export class ApiHandler implements Api {
       );
       this._log("Saved config to", this._sessionFileName);
     } catch (error) {
-      throw new Error("Couldn't save config file: " + error.message);
+      throw new Error("Couldn't save config file: " + (error as any).message);
     }
   }
 
@@ -165,11 +164,11 @@ export class ApiHandler implements Api {
    *
    * DON'T ACCESS THIS DIRECTLY. Use `_vimeo` instead.
    */
-  private _vimeoClient: SyncApi | undefined;
+  private _vimeoClient: VimeoApi | undefined;
 
-  protected get _vimeo(): SyncApi {
+  protected get _vimeo(): VimeoApi {
     if (this._vimeoClient === undefined) {
-      this._vimeoClient = new SyncApiHandler(this._session, {
+      this._vimeoClient = new VimeoApiHandler(this._session, {
         debug: this._managerConfig.logLevel === "DEBUG",
       });
     }
@@ -212,20 +211,6 @@ export class ApiHandler implements Api {
     }
   }
 
-  /**
-   * Make sure we have adequate info in the saved session to access Vimeo
-   */
-  // private _checkFullConfig() {
-  //   this._checkLoginConfig();
-  //
-  //   const { accessToken } = this._session;
-  //   if (!accessToken) {
-  //     throw new Error(
-  //       "Access token is missing from the configuration. You need to log in to Vimeo."
-  //     );
-  //   }
-  // }
-
   protected _launchServer() {
     const app = connect();
 
@@ -234,7 +219,9 @@ export class ApiHandler implements Api {
 
     // respond to all requests
     app.use((req: IncomingMessage, res: ServerResponse) => {
+      if (!req.url) return;
       const { path, query } = URI.parse(req.url);
+      if (!query) return;
       if (path === wantedPath) {
         // We have our callback!
         const values = parseQuery(query);
@@ -242,12 +229,11 @@ export class ApiHandler implements Api {
         try {
           const fileName = __dirname + "/../../../assets/success.html";
           res.end(fs.readFileSync(fileName));
-          Fiber(() => {
-            this.finishLogin(state, code);
-            process.exit(0);
-          }).run();
+
+          void this.finishLogin(state, code);
+          // process.exit(0); // TODO find out what we need here
         } catch (error) {
-          res.end(error.message);
+          res.end((error as any).message);
         }
       } else {
         res.end("Move along, nothing to see here.\n");
@@ -291,7 +277,7 @@ export class ApiHandler implements Api {
     return url;
   }
 
-  finishLogin(stateToken: string, codeToken: string) {
+  async finishLogin(stateToken: string, codeToken: string) {
     this._checkLoginConfig();
     const { stateToken: wantedStateToken } = this._session;
     if (wantedStateToken === undefined) {
@@ -304,11 +290,11 @@ export class ApiHandler implements Api {
     }
 
     let info: LoginInfo;
-    slow("getting access token from Vimeo", () => {
-      info = this._vimeo.finishLogin(codeToken);
+    await slow("getting access token from Vimeo", async () => {
+      info = await this._vimeo.finishLogin(codeToken);
     });
-    const { userUri, userName, scopes, accessToken } = info!;
-    console.log("Logged in as", userUri, userName, "!");
+    const { userUri, scopes, accessToken } = info!;
+    console.log("Logged in as", userUri, "!");
 
     delete this._session.stateToken;
     mergeInto(this._session, {
@@ -330,13 +316,13 @@ export class ApiHandler implements Api {
     console.log("Logged out from Vimeo.");
   }
 
-  checkLoginStatus() {
+  async checkLoginStatus() {
     const { userName, userUri, accessToken } = this._session;
     if (accessToken) {
       this._log("We have an access token.");
       let result: string;
-      slow("trying to access Vimeo", () => {
-        result = this._vimeo.tutorial();
+      await slow("trying to access Vimeo", async () => {
+        result = await this._vimeo.tutorial();
       });
       console.log("Test API call says: ", result!);
       console.log();
@@ -348,35 +334,35 @@ export class ApiHandler implements Api {
     }
   }
 
-  getMyVideos(): VideoData[] {
+  async getMyVideos(): Promise<VideoData[]> {
     let results: VideoData[];
-    slow(
+    await slow(
       "loading the list from Vimeo",
-      () => {
-        results = this._vimeo.listMyVideos();
+      async () => {
+        results = await this._vimeo.listMyVideos();
       },
       { hide: true }
     );
     return results!;
   }
 
-  getVideo(videoId: string): VideoData {
+  async getVideo(videoId: string): Promise<VideoData> {
     let result: VideoData;
-    slow(
+    await slow(
       "loading video data from Vimeo",
-      () => {
-        result = this._vimeo.getVideo(videoId);
+      async () => {
+        result = await this._vimeo.getVideo(videoId);
       },
       { hide: true }
     );
     return result!;
   }
 
-  updateVideoData(
+  async updateVideoData(
     videoId: string,
     data: VideoUpdateData,
     config: UpdateDataConfig = {}
-  ): VideoData {
+  ): Promise<VideoData> {
     const { silent } = config;
 
     this._log(
@@ -387,7 +373,7 @@ export class ApiHandler implements Api {
       "\n"
     );
 
-    const video = this.getVideo(videoId);
+    const video = await this.getVideo(videoId);
 
     if (video.user.uri !== this._session.userUri) {
       throw new Error(
@@ -415,18 +401,18 @@ export class ApiHandler implements Api {
 
     this._log(data);
 
-    slow("updating data", () => {
-      this._vimeo.editVideo(videoId, data);
+    await slow("updating data", async () => {
+      await this._vimeo.editVideo(videoId, data);
     });
 
-    return this.getVideo(videoId);
+    return await this.getVideo(videoId);
   }
 
-  uploadVideo(
+  async uploadVideo(
     videoFileName: string,
     data: VideoUpdateData,
     config: UploadConfig
-  ): VideoData {
+  ): Promise<VideoData> {
     console.log(
       "Uploading",
       videoFileName,
@@ -446,19 +432,23 @@ export class ApiHandler implements Api {
     this._log("Received data:", data);
 
     let hash: string;
-    slow("calculating hash", () => {
-      hash = "http://" + getHashSync(videoFileName);
+    await slow("calculating hash", async () => {
+      hash = "http://" + (await getHash(videoFileName));
       mergeInto(data, { embed: { logos: { custom: { link: hash } } } });
     });
 
     let uri: string;
 
-    slow("uploading video file", (control) => {
-      uri = this._vimeo.uploadVideo(videoFileName, data!, (uploaded, total) => {
-        control.setText(
-          "Uploaded " + Math.round((100 * uploaded) / total) + "%"
-        );
-      });
+    await slow("uploading video file", async (control) => {
+      uri = await this._vimeo.uploadVideo(
+        videoFileName,
+        data!,
+        (uploaded, total) => {
+          control.setText(
+            "Uploaded " + Math.round((100 * uploaded) / total) + "%"
+          );
+        }
+      );
     });
 
     const videoId = videoUriToId(uri!);
@@ -468,7 +458,10 @@ export class ApiHandler implements Api {
         fs.writeFileSync(idFileName, videoId);
       } catch (error) {
         throw new Error(
-          "Couldn't save video ID to '" + idFileName + "': " + error.message
+          "Couldn't save video ID to '" +
+            idFileName +
+            "': " +
+            (error as any).message
         );
       }
     }
@@ -477,11 +470,11 @@ export class ApiHandler implements Api {
      * For some reason, just after uploading, some fields (like the name a.k.a. title) get messed up.
      * To work around this, we update the metadata right away.
      */
-    this.updateVideoData(videoId, data, { silent: true });
+    await this.updateVideoData(videoId, data, { silent: true });
 
     if (waitForEncoding || thumbnailTime !== undefined) {
-      slow("waiting for encoding", () => {
-        this._vimeo.waitForEncodingToFinish(videoId);
+      await slow("waiting for encoding", async () => {
+        await this._vimeo.waitForEncodingToFinish(videoId);
       });
     }
 
@@ -491,7 +484,7 @@ export class ApiHandler implements Api {
      * If we were passed a time, create a thumbnail from that spot
      */
     if (thumbnailTime !== undefined) {
-      wantedThumbnail = this.recreateThumbnail(videoId, {
+      wantedThumbnail = await this.recreateThumbnail(videoId, {
         time: thumbnailTime,
       });
     }
@@ -500,9 +493,13 @@ export class ApiHandler implements Api {
      * If we were passed a thumbnail image file, upload that, too
      */
     if (thumbnailImageFile) {
-      wantedThumbnail = this.uploadThumbnail(videoId, thumbnailImageFile, {
-        active: true,
-      });
+      wantedThumbnail = await this.uploadThumbnail(
+        videoId,
+        thumbnailImageFile,
+        {
+          active: true,
+        }
+      );
     }
 
     if (wantedThumbnail) {
@@ -510,8 +507,8 @@ export class ApiHandler implements Api {
     }
 
     let video: VideoData;
-    slow("checking end result", () => {
-      video = this._vimeo.getVideo(videoId);
+    await slow("checking end result", async () => {
+      video = await this._vimeo.getVideo(videoId);
     });
 
     this._log("Video data is", video!);
@@ -523,16 +520,16 @@ export class ApiHandler implements Api {
     return video!;
   }
 
-  deleteVideo(videoId: string) {
+  async deleteVideo(videoId: string): Promise<void> {
     console.log("Going to delete video", videoId, "\n");
-    slow("deleting video", () => this._vimeo.deleteVideo(videoId));
+    await slow("deleting video", () => this._vimeo.deleteVideo(videoId));
   }
 
-  replaceVideoContent(
+  async replaceVideoContent(
     videoId: string,
     videoFileName: string,
     config: ReplaceConfig
-  ): VideoData {
+  ): Promise<VideoData> {
     console.log(
       "Replacing video content for",
       videoId,
@@ -550,12 +547,12 @@ export class ApiHandler implements Api {
       ignoreHash,
     } = config;
 
-    let video = this.getVideo(videoId);
+    let video = await this.getVideo(videoId);
     const oldHash = lodashGet(video, "embed.logos.custom.link");
 
-    let newHash: string;
-    slow("calculating hash", () => {
-      newHash = "http://" + getHashSync(videoFileName);
+    let newHash = "unset";
+    await slow("calculating hash", async () => {
+      newHash = "http://" + (await getHash(videoFileName));
     });
 
     if (newHash! === oldHash) {
@@ -570,26 +567,30 @@ export class ApiHandler implements Api {
       }
     }
 
-    slow("uploading video file", (control) => {
-      this._vimeo.replaceVideo(videoId, videoFileName, (uploaded, total) => {
-        control.setText(
-          "Uploaded " + Math.round((100 * uploaded) / total) + "%"
-        );
-      });
+    await slow("uploading video file", async (control) => {
+      await this._vimeo.replaceVideo(
+        videoId,
+        videoFileName,
+        (uploaded, total) => {
+          control.setText(
+            "Uploaded " + Math.round((100 * uploaded) / total) + "%"
+          );
+        }
+      );
     });
 
-    slow("updating meta-data", () => {
+    await slow("updating meta-data", async () =>
       this._vimeo.editVideo(videoId, {
         embed: { logos: { custom: { link: newHash! } } },
-      });
-    });
+      })
+    );
 
     if (waitForEncoding || (!keepThumbnail && !thumbnailImageFile)) {
-      slow("waiting for encoding", (control) => {
+      await slow("waiting for encoding", async (control) => {
         control.setText("waiting for encoding to start...");
-        this._vimeo.waitForEncodingToStart(videoId);
+        await this._vimeo.waitForEncodingToStart(videoId);
         control.setText("waiting for encoding to finish...");
-        this._vimeo.waitForEncodingToFinish(videoId);
+        await this._vimeo.waitForEncodingToFinish(videoId);
       });
     }
 
@@ -598,25 +599,25 @@ export class ApiHandler implements Api {
        * If we were passed a thumbnail image file, upload that, too
        */
       if (thumbnailImageFile) {
-        this.uploadThumbnail(videoId, thumbnailImageFile, {
+        await this.uploadThumbnail(videoId, thumbnailImageFile!, {
           active: true,
         });
       } else {
         /**
          * We will generate a thumbnail from the image
          */
-        slow(
+        await slow(
           "waiting for the video to be ready for thumbnail generation",
-          () => {
-            sleep(30 * 1000); // TODO: what out what is a safe value here
+          async () => {
+            await sleep(30 * 1000); // TODO: what out what is a safe value here
           }
         );
-        this.recreateThumbnail(videoId, { time: thumbnailTime });
+        await this.recreateThumbnail(videoId, { time: thumbnailTime });
       }
     }
 
-    slow("checking end result", () => {
-      video = this._vimeo.getVideo(videoId);
+    await slow("checking end result", async () => {
+      video = await this._vimeo.getVideo(videoId);
     });
     if (openInBrowser) {
       console.log("Opening in browser:", video!.link, "\n");
@@ -625,21 +626,21 @@ export class ApiHandler implements Api {
     return video!;
   }
 
-  openVideo(videoId: string) {
-    const video = this._vimeo.getVideo(videoId);
+  async openVideo(videoId: string) {
+    const video = await this._vimeo.getVideo(videoId);
     console.log("Opening in browser:", video!.link, "\n");
     open(video!.link).then();
   }
 
-  getAllThumbnails(videoId: string): Picture[] {
+  async getAllThumbnails(videoId: string): Promise<Picture[]> {
     let result: Picture[];
-    slow("getting data about thumbnails", () => {
-      result = this._vimeo.getAllThumbnails(videoId);
+    await slow("getting data about thumbnails", async () => {
+      result = await this._vimeo.getAllThumbnails(videoId);
     });
     return result!;
   }
 
-  deleteThumbnail(videoId: string, pictureId: string) {
+  async deleteThumbnail(videoId: string, pictureId: string) {
     console.log(
       "Going to delete thumbnail",
       pictureId,
@@ -647,35 +648,36 @@ export class ApiHandler implements Api {
       videoId,
       "\n"
     );
-    slow("deleting thumbnail", () =>
+    await slow("deleting thumbnail", () =>
       this._vimeo.deleteThumbnail(videoId, pictureId)
     );
   }
 
-  deleteThumbnails(videoId: string) {
+  async deleteThumbnails(videoId: string) {
     console.log("Going to delete thumbnails", "for video", videoId, "\n");
-    const thumbnails = this.getAllThumbnails(videoId);
+    const thumbnails = await this.getAllThumbnails(videoId);
     thumbnails.forEach((thumbnail) => {
       const pictureId = pictureUriToId(thumbnail.uri);
-      slow("deleting thumbnail " + pictureId, () =>
-        this._vimeo.deleteThumbnail(videoId, pictureId)
+      slow(
+        "deleting thumbnail " + pictureId,
+        async () => await this._vimeo.deleteThumbnail(videoId, pictureId)
       );
     });
   }
 
-  createThumbnail(
+  async createThumbnail(
     videoId: string,
     config: CreateThumbnailConfig = {}
-  ): Picture {
+  ): Promise<Picture> {
     const { time, active, openInBrowser } = config;
     let wantedTime = time;
     if (wantedTime === undefined) {
-      const video = this.getVideo(videoId);
+      const video = await this.getVideo(videoId);
       wantedTime = video.duration / 2;
     }
     let result: Picture;
-    slow("creating thumbnail", () => {
-      result = this._vimeo.createThumbnail(videoId, wantedTime!, active);
+    await slow("creating thumbnail", async () => {
+      result = await this._vimeo.createThumbnail(videoId, wantedTime!, active);
     });
     if (openInBrowser) {
       const { link } = selectLargestPicture(result!);
@@ -685,28 +687,28 @@ export class ApiHandler implements Api {
     return result!;
   }
 
-  recreateThumbnail(
+  async recreateThumbnail(
     videoId: string,
     config: ReCreateThumbnailConfig = {}
-  ): Picture {
+  ): Promise<Picture> {
     const { time, openInBrowser } = config;
-    this.deleteThumbnails(videoId);
-    return this.createThumbnail(videoId, {
+    await this.deleteThumbnails(videoId);
+    return await this.createThumbnail(videoId, {
       time,
       active: true,
       openInBrowser,
     });
   }
 
-  uploadThumbnail(
+  async uploadThumbnail(
     videoId: string,
     fileName: string,
     config: UploadThumbnailConfig = {}
-  ): Picture {
+  ): Promise<Picture> {
     this._log("Uploading new thumbnail for", videoId);
     const { active, openInBrowser } = config;
     this._log("(Activate: ", active, "; open: ", openInBrowser, ")");
-    const video = this.getVideo(videoId);
+    const video = await this.getVideo(videoId);
     const picturesUri = video.metadata.connections.pictures.uri;
     this._log("Pictures URI is", picturesUri);
 
@@ -726,8 +728,8 @@ export class ApiHandler implements Api {
 
     // Request a new upload
     let uploadPicture: UploadPicture;
-    slow("Requesting a new thumbnail upload", () => {
-      uploadPicture = this._vimeo.initiateThumbnailUpload(picturesUri);
+    await slow("Requesting a new thumbnail upload", async () => {
+      uploadPicture = await this._vimeo.initiateThumbnailUpload(picturesUri);
     });
 
     const { uri: pictureUri, link: uploadLink } = uploadPicture!;
@@ -735,34 +737,34 @@ export class ApiHandler implements Api {
     this._log("Upload link is", uploadLink);
 
     // Execute the upload
-    slow("uploading image", () => {
-      this._vimeo.uploadThumbnail(uploadLink, contentType, data);
+    await slow("uploading image", async () => {
+      await this._vimeo.uploadThumbnail(uploadLink, contentType, data);
     });
     this._log("Image uploaded.");
 
     // Set the image to active
     if (active) {
-      slow("activating new thumbnail", () => {
-        this._vimeo.setThumbnailActive(uploadPicture.uri, true);
+      await slow("activating new thumbnail", async () => {
+        await this._vimeo.setThumbnailActive(uploadPicture.uri, true);
       });
     }
 
     // Open in browser
     if (openInBrowser) {
-      this.openVideo(videoId);
+      await this.openVideo(videoId);
     }
 
     return uploadPicture!;
   }
 
-  getShowcase(showcaseId: string): ShowcaseInfo {
+  async getShowcase(showcaseId: string): Promise<ShowcaseInfo> {
     let showcase: Showcase;
-    slow("getting data about the showcase itself", () => {
-      showcase = this._vimeo.getShowcase(showcaseId);
+    await slow("getting data about the showcase itself", async () => {
+      showcase = await this._vimeo.getShowcase(showcaseId);
     });
     let videos: VideoData[];
-    slow("getting the list of videos", () => {
-      videos = this._vimeo.getVideosInShowcase(showcaseId);
+    await slow("getting the list of videos", async () => {
+      videos = await this._vimeo.getVideosInShowcase(showcaseId);
     });
 
     return {

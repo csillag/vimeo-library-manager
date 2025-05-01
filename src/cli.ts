@@ -2,19 +2,18 @@
 
 import { createVimeoLibraryManager, mergeInto, VimeoLibraryManager } from ".";
 
-const fs = require("fs");
-import Fiber = require("fibers");
+import fs = require("fs");
 import { Command } from "commander";
 import { VideoData, VideoUpdateData } from "./lib/vimeo-access";
 
 const APP_NAME = "vimeo-library-manager";
 
-type VimeoAction = (manager: VimeoLibraryManager, args: any[]) => void;
+type VimeoAction = (manager: VimeoLibraryManager, args: any[]) => Promise<void>;
 
 /**
  * Run the commands with a configured Vimeo Library Manager instance, and exception handling
  */
-function runAction(action: VimeoAction, args: any[]) {
+async function runAction(action: VimeoAction, args: any[]) {
   const opts = args[args.length - 1];
   const { parent } = opts as any;
   const { config, debug } = parent;
@@ -23,9 +22,9 @@ function runAction(action: VimeoAction, args: any[]) {
     logLevel: debug ? "DEBUG" : "NORMAL",
   });
   try {
-    action(manager, args);
+    await action(manager, args);
   } catch (error) {
-    console.error("\x1b[31m", "\n", debug ? error : error.message);
+    console.error("\x1b[31m", "\n", debug ? error : (error as any).message);
     console.error("\x1b[0m");
   }
 }
@@ -77,7 +76,10 @@ function parseUpdateEditOptions(options: any): VideoUpdateData {
       customString = fs.readFileSync(setCustomFile, "utf8");
     } catch (error) {
       throw new Error(
-        "Can't read custom data file '" + setCustomFile + "': " + error.message
+        "Can't read custom data file '" +
+          setCustomFile +
+          "': " +
+          (error as any).message
       );
     }
     try {
@@ -114,7 +116,7 @@ function parseUpdateEditOptions(options: any): VideoUpdateData {
         "Can't read specified description file '" +
           setDescriptionFile +
           "': " +
-          error.message
+          (error as any).message
       );
     }
   }
@@ -161,7 +163,7 @@ function describeVideo(video: VideoData) {
 function cli() {
   const program = new Command(APP_NAME);
 
-  program.version("0.0.13");
+  program.version("0.0.15");
   program
     .option(
       "-c, --config <config-file>",
@@ -173,13 +175,13 @@ function cli() {
   program
     .command("test")
     .description("Test your Vimeo access")
-    .action(wrapAction((manager) => manager.checkLoginStatus()));
+    .action(wrapAction(async (manager) => await manager.checkLoginStatus()));
 
   program
     .command("setup <client-id> <client-secret> <redirect-url>")
     .description("Set up your Vimeo access")
     .action(
-      wrapAction((vimeo, args) => {
+      wrapAction(async (vimeo, args) => {
         const [clientId, clientSecret, redirectUrl] = args;
         vimeo.setup({
           clientId,
@@ -198,7 +200,7 @@ function cli() {
     )
     .option("--no-browser-launch", "Don't open the login page in the browser")
     .action(
-      wrapAction((manager, options) => {
+      wrapAction(async (manager, options) => {
         const { browserLaunch, webServer } = options[0];
         const url = manager.startLogin({
           noWebServer: !webServer,
@@ -224,23 +226,23 @@ function cli() {
     .command("finish-login <state-token> <code-token>", { hidden: true })
     .description("Finish the login process")
     .action(
-      wrapAction((manager, args) => {
+      wrapAction(async (manager, args) => {
         const [stateToken, codeToken] = args;
-        manager.finishLogin(stateToken, codeToken);
+        await manager.finishLogin(stateToken, codeToken);
       })
     );
 
   program
     .command("logout")
     .description("Log out from vimeo")
-    .action(wrapAction((manager) => manager.logout()));
+    .action(wrapAction(async (manager) => manager.logout()));
 
   program
     .command("list-videos")
     .description("List my videos")
     .action(
-      wrapAction((manager) => {
-        const results = manager.getMyVideos();
+      wrapAction(async (manager) => {
+        const results = await manager.getMyVideos();
         if (!results.length) {
           console.log("I don't see no videos here.");
         } else if (results.length === 1) {
@@ -260,9 +262,9 @@ function cli() {
     .command("show-details <video-id>")
     .description("Show details about a video")
     .action(
-      wrapAction((manager, args) => {
+      wrapAction(async (manager, args) => {
         const [videoId] = args;
-        const video = manager.getVideo(videoId);
+        const video = await manager.getVideo(videoId);
         console.log(video);
       })
     );
@@ -272,8 +274,8 @@ function cli() {
     .description("Get info about one of my showcases")
     .option("--url-only", "Only show the URL for each video")
     .action(
-      wrapAction((manager, [showcaseId, { urlOnly }]) => {
-        const result = manager.getShowcase(showcaseId);
+      wrapAction(async (manager, [showcaseId, { urlOnly }]) => {
+        const result = await manager.getShowcase(showcaseId);
         const { name, link, videos } = result;
         console.log("Found showcase", '"' + name + '"', "at", link);
         console.log();
@@ -287,9 +289,9 @@ function cli() {
     .command("open-video <video-id>")
     .description("Open a video in a browser")
     .action(
-      wrapAction((manager, args) => {
+      wrapAction(async (manager, args) => {
         const [videoId] = args;
-        manager.openVideo(videoId);
+        await manager.openVideo(videoId);
       })
     );
 
@@ -298,10 +300,10 @@ function cli() {
   addUpdateEditOptions(update)
     .description("Update video meta-data")
     .action(
-      wrapAction((manager, args) => {
+      wrapAction(async (manager, args) => {
         const [videoId, opts] = args;
         const data = parseUpdateEditOptions(opts);
-        const video = manager.updateVideoData(videoId, data);
+        const video = await manager.updateVideoData(videoId, data);
         describeVideo(video);
       })
     );
@@ -317,7 +319,7 @@ function cli() {
     )
     .description("Upload a new video")
     .action(
-      wrapAction((manager, args) => {
+      wrapAction(async (manager, args) => {
         const [videoFileName, opts] = args;
         const data = parseUpdateEditOptions(opts);
         const {
@@ -327,7 +329,7 @@ function cli() {
           open,
           writeIdTo,
         } = opts;
-        const video = manager.uploadVideo(videoFileName, data, {
+        const video = await manager.uploadVideo(videoFileName, data, {
           waitForEncoding,
           thumbnailTime: thumbnailTimeOffset,
           thumbnailImageFile: thumbnailFile,
@@ -342,9 +344,9 @@ function cli() {
     .command("delete-video <video-id>")
     .description("Delete a video")
     .action(
-      wrapAction((manager, args) => {
+      wrapAction(async (manager, args) => {
         const [videoId] = args;
-        manager.deleteVideo(videoId);
+        await manager.deleteVideo(videoId);
       })
     );
 
@@ -361,7 +363,7 @@ function cli() {
     )
     .description("Replace video content")
     .action(
-      wrapAction((manager, args) => {
+      wrapAction(async (manager, args) => {
         const [videoId, videoFileName, opts] = args;
         const {
           waitForEncoding,
@@ -371,7 +373,7 @@ function cli() {
           thumbnailTimeOffset,
           thumbnailFile,
         } = opts;
-        manager.replaceVideoContent(videoId, videoFileName, {
+        await manager.replaceVideoContent(videoId, videoFileName, {
           waitForEncoding,
           keepThumbnail: !recreateThumbnail,
           thumbnailTime: thumbnailTimeOffset,
@@ -386,9 +388,9 @@ function cli() {
     .command("list-thumbnails <video-id>")
     .description("List the thumbnails for a video")
     .action(
-      wrapAction((manager, args) => {
+      wrapAction(async (manager, args) => {
         const [videoId] = args;
-        const thumbnails = manager.getAllThumbnails(videoId);
+        const thumbnails = await manager.getAllThumbnails(videoId);
         console.log(
           "Thumbnails for",
           videoId,
@@ -415,14 +417,14 @@ function cli() {
     .option("--no-set-default", "Don't set the new thumbnail as default")
     .option("--open", "Open in browser")
     .action(
-      wrapAction((manager, args) => {
+      wrapAction(async (manager, args) => {
         const [videoId, opts] = args;
         const {
           setDefault: active,
           open: openInBrowser,
           timeOffset: time,
         } = opts;
-        manager.createThumbnail(videoId, { time, active, openInBrowser });
+        await manager.createThumbnail(videoId, { time, active, openInBrowser });
       })
     );
 
@@ -435,10 +437,10 @@ function cli() {
     )
     .option("--open", "Open in browser")
     .action(
-      wrapAction((manager, args) => {
+      wrapAction(async (manager, args) => {
         const [videoId, opts] = args;
         const { open: openInBrowser, timeOffset: time } = opts;
-        manager.recreateThumbnail(videoId, { time, openInBrowser });
+        await manager.recreateThumbnail(videoId, { time, openInBrowser });
       })
     );
 
@@ -451,10 +453,10 @@ function cli() {
     )
     .option("--open", "Open in browser")
     .action(
-      wrapAction((manager, args) => {
+      wrapAction(async (manager, args) => {
         const [videoId, imageFileName, opts] = args;
         const { activate, open } = opts;
-        manager.uploadThumbnail(videoId, imageFileName, {
+        await manager.uploadThumbnail(videoId, imageFileName, {
           active: activate,
           openInBrowser: open,
         });
@@ -462,9 +464,8 @@ function cli() {
     );
 
   console.log("[" + APP_NAME + "]");
-  console.log();
   program.parse(process.argv);
   console.log();
 }
 
-Fiber(cli).run();
+cli();

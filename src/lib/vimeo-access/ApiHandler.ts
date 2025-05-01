@@ -4,17 +4,13 @@ import {
   AuthInfo,
   ClientParams,
   LoginInfo,
-  UploadFailCallback,
   UploadProgressCallback,
-  UploadSuccessCallback,
   VideoUpdateData,
   Showcase,
 } from "./Types";
 import { RequestOptions, Vimeo } from "vimeo";
 import { Picture, UploadPicture, VideoData } from "./MoreTypes";
 import { AxiosResponse } from "axios";
-// const request = require("request");
-// import { Response } from "request";
 const axios = require("axios").default;
 
 const wantedScopes: AccessScope[] = [
@@ -91,7 +87,6 @@ export class ApiHandler implements Api {
               resolve({
                 accessToken,
                 userUri: user.uri,
-                userName: user.name,
                 scopes: scope.split(" "),
               });
             } else {
@@ -204,11 +199,21 @@ export class ApiHandler implements Api {
   uploadVideo(
     videoFileName: string,
     data: VideoUpdateData,
-    onSuccess: UploadSuccessCallback,
-    onProgress: UploadProgressCallback,
-    onFail: UploadFailCallback
-  ) {
-    this._client.upload(videoFileName, data, onSuccess, onProgress, onFail);
+    onProgress: UploadProgressCallback
+  ): Promise<string> {
+    return new Promise<string>((resolve, reject) => {
+      this._client.upload(
+        videoFileName,
+        data,
+        (url: string) => {
+          resolve(url);
+        },
+        onProgress,
+        (error: string) => {
+          reject(new Error(error));
+        }
+      );
+    });
   }
 
   waitForEncodingToStart(videoId: string): Promise<void> {
@@ -288,18 +293,22 @@ export class ApiHandler implements Api {
   replaceVideo(
     videoId: string,
     videoFileName: string,
-    onSuccess: UploadSuccessCallback,
-    onProgress: UploadProgressCallback,
-    onFail: UploadFailCallback
-  ) {
-    this._client.replace(
-      videoFileName,
-      "/videos/" + videoId,
-      {},
-      onSuccess,
-      onProgress,
-      onFail
-    );
+    onProgress: UploadProgressCallback
+  ): Promise<string> {
+    return new Promise<string>((resolve, reject) => {
+      this._client.replace(
+          videoFileName,
+          "/videos/" + videoId,
+          {},
+        (url: string) => {
+          resolve(url);
+        },
+        onProgress,
+        (error: string) => {
+          reject(new Error(error));
+        }
+      );
+    });
   }
 
   getAllThumbnails(videoId: string): Promise<Picture[]> {

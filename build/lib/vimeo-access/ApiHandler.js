@@ -1,16 +1,16 @@
 "use strict";
-var __spreadArrays = (this && this.__spreadArrays) || function () {
-    for (var s = 0, i = 0, il = arguments.length; i < il; i++) s += arguments[i].length;
-    for (var r = Array(s), k = 0, i = 0; i < il; i++)
-        for (var a = arguments[i], j = 0, jl = a.length; j < jl; j++, k++)
-            r[k] = a[j];
-    return r;
+var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
+    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
+        if (ar || !(i in from)) {
+            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+        }
+    }
+    return to.concat(ar || Array.prototype.slice.call(from));
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ApiHandler = void 0;
 var vimeo_1 = require("vimeo");
-// const request = require("request");
-// import { Response } from "request";
 var axios = require("axios").default;
 var wantedScopes = [
     "public",
@@ -80,7 +80,6 @@ var ApiHandler = /** @class */ (function () {
                         resolve({
                             accessToken: accessToken,
                             userUri: user.uri,
-                            userName: user.name,
                             scopes: scope.split(" "),
                         });
                     }
@@ -128,7 +127,7 @@ var ApiHandler = /** @class */ (function () {
                     }
                     var totalPages = Math.ceil(total / per_page);
                     var isLast = totalPages <= currentPage;
-                    var upToNow = __spreadArrays(loaded, data); // Unite the already loaded and the new data
+                    var upToNow = __spreadArray(__spreadArray([], loaded, true), data, true); // Unite the already loaded and the new data
                     if (isLast) {
                         resolve(upToNow);
                     }
@@ -184,8 +183,15 @@ var ApiHandler = /** @class */ (function () {
             });
         });
     };
-    ApiHandler.prototype.uploadVideo = function (videoFileName, data, onSuccess, onProgress, onFail) {
-        this._client.upload(videoFileName, data, onSuccess, onProgress, onFail);
+    ApiHandler.prototype.uploadVideo = function (videoFileName, data, onProgress) {
+        var _this = this;
+        return new Promise(function (resolve, reject) {
+            _this._client.upload(videoFileName, data, function (url) {
+                resolve(url);
+            }, onProgress, function (error) {
+                reject(new Error(error));
+            });
+        });
     };
     ApiHandler.prototype.waitForEncodingToStart = function (videoId) {
         var _this = this;
@@ -255,8 +261,15 @@ var ApiHandler = /** @class */ (function () {
             });
         });
     };
-    ApiHandler.prototype.replaceVideo = function (videoId, videoFileName, onSuccess, onProgress, onFail) {
-        this._client.replace(videoFileName, "/videos/" + videoId, {}, onSuccess, onProgress, onFail);
+    ApiHandler.prototype.replaceVideo = function (videoId, videoFileName, onProgress) {
+        var _this = this;
+        return new Promise(function (resolve, reject) {
+            _this._client.replace(videoFileName, "/videos/" + videoId, {}, function (url) {
+                resolve(url);
+            }, onProgress, function (error) {
+                reject(new Error(error));
+            });
+        });
     };
     ApiHandler.prototype.getAllThumbnails = function (videoId) {
         var _this = this;
@@ -454,7 +467,7 @@ var ApiHandler = /** @class */ (function () {
                     }
                     var totalPages = Math.ceil(total / per_page);
                     var isLast = totalPages <= currentPage;
-                    var upToNow = __spreadArrays(loaded, data); // Unite the already loaded and the new data
+                    var upToNow = __spreadArray(__spreadArray([], loaded, true), data, true); // Unite the already loaded and the new data
                     if (isLast) {
                         resolve(upToNow);
                     }

@@ -1,13 +1,11 @@
-import fs = require("fs");
-import crypto = require("crypto");
-const lodashGet = require("lodash.get");
-const lodashSet = require("lodash.set");
-const ora = require("ora");
-const Fiber = require("fibers");
-import { wrapPromiseAsync1 } from "../fiber-async-function-wrappers";
+import { createReadStream } from "fs";
+import { createHash } from "crypto";
+import lodashGet from "lodash/get";
+import lodashSet from "lodash/set";
+import ora = require("ora");
 
 /**
- * A simple function to parse a HTML query string to key-value pairs
+ * A simple function to parse an HTML query string to key-value pairs
  */
 export function parseQuery(query: string): any {
   const result = {};
@@ -18,31 +16,19 @@ export function parseQuery(query: string): any {
   return result;
 }
 
-const hash = crypto.createHash("shake256");
-
 /**
  * A simple function to get a hash string for a file
  */
-function getHash(filename: string): Promise<string> {
-  return new Promise<string>((resolve, _reject) => {
-    const input = fs.createReadStream(filename);
-    input.on("readable", () => {
-      // Only one element is going to be produced by the
-      // hash stream.
-      const data = input.read();
-      if (data) hash.update(data);
-      else {
-        const digest = hash.digest("hex");
-        resolve(digest);
-      }
-    });
+export async function getHash(filename: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const hash = createHash("sha256");
+    const stream = createReadStream(filename);
+
+    stream.on("data", (data: Buffer) => hash.update(data));
+    stream.on("end", () => resolve(hash.digest("hex")));
+    stream.on("error", (err: Error) => reject(err));
   });
 }
-
-/**
- * A simple synchronous function to get a hash string for a file
- */
-export const getHashSync = wrapPromiseAsync1(getHash, this);
 
 /**
  * This get function is an enhanced version of lodash get, which supports empty / undefined path to return the whole object.
@@ -62,7 +48,7 @@ function get(object: any, path?: string): any {
  * @param change        The change request object
  * @param reference     The original object
  * @param path          Where we are currently in the comparison
- * @param changeParent  The immediate upper level sub-tree
+ * @param changeParent  The immediate upper level subtree
  * @param currentKey    The key where we are currently in the upper level node
  */
 export function reduceChanges(
@@ -134,9 +120,9 @@ interface SlowControl {
   setText(text: string): void;
 }
 
-type SlowAction = (control: SlowControl) => void;
+type SlowAction = (control: SlowControl) => Promise<void>;
 
-export function slow(
+export async function slow(
   activity: string,
   action: SlowAction,
   config: SlowConfig = {}
@@ -152,7 +138,7 @@ export function slow(
   };
 
   try {
-    action(control);
+    await action(control);
     if (config.hide) {
       spinner.stop();
     } else {
@@ -165,15 +151,8 @@ export function slow(
   }
 }
 
-/**
- * This function is usable in Fiber environments
- */
-export function sleep(ms: number) {
-  const fiber = Fiber.current;
-  setTimeout(function () {
-    fiber.run();
-  }, ms);
-  Fiber.yield();
+export async function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 /**

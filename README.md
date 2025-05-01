@@ -12,12 +12,12 @@ You need to have:
  - An application defined (go to https://developer.vimeo.com/apps to create one)
  - The App ID and Secret. (You can copy these from Vimeo's UI.)
  
-### Why do I need an own application? I though this is the application?
+### Why do I need an own application? I thought this is the application?
 
 In Vimeo's terminology, in order to talk to their APIs, you need to have an
 application. An application is identified by an app ID and secret.
 
-Further more, every application is tied to the specific user that has
+Furthermore, every application is tied to the specific user that has
 created it. So if I provided you with the App ID and Secret I created 
 for myself, whatever you do with this app would be connected to my name.
 
@@ -25,7 +25,7 @@ I think we can agree that this is not what we want.
 
 ## Supported operations
 
-Basically, it supports uploading, replacing and ediging videos.
+Basically, it supports uploading, replacing and editing videos.
 
 
 ```
@@ -86,7 +86,7 @@ Options:
 
 ### Editing the meda-data of a video
 
-You can provide a valid JSON string, with escaping and all that, to set any obsecure property.
+You can provide a valid JSON string, with escaping and all that, to set any obscure property.
 About properties that can be edited, see [the API reference](https://developer.vimeo.com/api/reference/videos#edit_video).
 
 There are also shortcuts:

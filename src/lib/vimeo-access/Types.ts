@@ -39,7 +39,6 @@ export interface ClientParams {
 export interface LoginInfo {
   accessToken: string;
   userUri: string;
-  userName: string;
   scopes: AccessScope[];
 }
 
@@ -163,12 +162,10 @@ export interface VideoUpdateData {
   spatial?: any; // TODO
 }
 
-export type UploadSuccessCallback = (videoUri: string) => void;
 export type UploadProgressCallback = (
   bytesUploaded: number,
   bytesTotal: number
 ) => void;
-export type UploadFailCallback = (error: string) => void;
 
 export interface Showcase {
   /**
